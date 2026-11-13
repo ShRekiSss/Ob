@@ -1,0 +1,10 @@
+#!/bin/sh
+# win Имя — объявить победителя на табло
+if [ -z "$1" ]; then
+    echo "Использование: win Имя (например: win Зеленюк Д.Д.)"
+    exit 1
+fi
+python3 -c "import urllib.request,urllib.parse,sys; name=' '.join(sys.argv[1:]); \
+urllib.request.urlopen('http://127.0.0.1:8080/api/winner', \
+urllib.parse.urlencode({'name':name}).encode())" "$@" \
+&& echo "OK: победитель записан: $*"

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Exam Board · ДЭ 10.02.05</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>ДЕМОНСТРАЦИОННЫЙ ЭКЗАМЕН<small>специальность 10.02.05 · учебный стенд</small></h1>
+    <div class="clock"><span id="clock">--:--:--</span><small>время сервера</small></div>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Кто подключился</h2>
+      <table>
+        <thead><tr><th>Студент</th><th>Сессия</th><th>Откуда</th><th>Время входа</th></tr></thead>
+        <tbody id="rows"><tr><td colspan="4" class="muted">пока тишина…</td></tr></tbody>
+      </table>
+      <p class="note">Список обновляется сам каждые 2 секунды. Сессии студенческих входов (SSH) подсвечены золотым.</p>
+    </div>
+
+    <div class="card">
+      <h2>Управление табло</h2>
+      <div class="stats">
+        <div class="stat"><b id="total">0</b><span>подключений всего</span></div>
+        <div class="stat"><b id="unique">0</b><span>студентов</span></div>
+      </div>
+      <button id="btnWin">🏆 Объявить победителя</button>
+      <button id="btnReset" class="ghost">Сбросить</button>
+      <p class="note">Студент тоже может сам: на сервере команда <b>win Имя</b> — табло зафиксирует время и имя.</p>
+    </div>
+  </div>
+
+  <div id="winner">
+    <div class="word">ПОБЕДИТЕЛЬ</div>
+    <div class="who" id="whoName"></div>
+    <div class="when" id="whoTime"></div>
+  </div>
+</div>
+<script src="/app.js"></script>
+</body>
+</html>
