@@ -1,6 +1,6 @@
-disk.img
-disk.vmdk
-ExamBoard.ova
-console.log
-screen.png
-build/*.log
+/station-mission
+*.test
+*.out
+.DS_Store
+.idea/
+.vscode/
