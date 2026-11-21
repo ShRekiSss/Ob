@@ -444,6 +444,145 @@
 
   .reset:disabled { opacity: .5; cursor: wait; }
 
+  .arcade-launch {
+    align-self: flex-start;
+    padding: 10px 16px;
+    border: 1px solid var(--line-bright);
+    border-radius: 6px;
+    background: linear-gradient(180deg, rgba(46, 180, 120, .22), rgba(10, 25, 20, .9));
+    color: var(--green);
+    font: inherit;
+    font-size: .76rem;
+    letter-spacing: .1em;
+    cursor: pointer;
+    animation: launch-glow 2.6s ease-in-out infinite alternate;
+  }
+
+  @keyframes launch-glow {
+    from { box-shadow: 0 0 8px rgba(110, 242, 164, .08); }
+    to   { box-shadow: 0 0 26px rgba(110, 242, 164, .26); }
+  }
+
+  .arcade-overlay,
+  .victory-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    background: radial-gradient(circle at 50% 36%, rgba(8, 28, 22, .96), rgba(1, 4, 4, .99) 72%);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    transition: opacity .6s ease;
+  }
+
+  .arcade-overlay.visible,
+  .victory-overlay.visible { opacity: 1; }
+
+  .arcade-overlay[hidden],
+  .victory-overlay[hidden],
+  .arcade-launch[hidden] { display: none; }
+
+  .arcade-panel {
+    width: min(94vw, 780px);
+    padding: 16px;
+    border: 1px solid var(--line-bright);
+    border-radius: 10px;
+    background: rgba(4, 12, 10, .94);
+    box-shadow: 0 0 80px rgba(46, 180, 120, .16);
+  }
+
+  .arcade-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--green);
+    font-size: .72rem;
+    letter-spacing: .18em;
+  }
+
+  .arcade-close {
+    padding: 0 4px;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .arcade-tip {
+    margin: 8px 0 12px;
+    color: #8eaaa0;
+    font-size: .72rem;
+  }
+
+  #arcade-canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: #020706;
+    touch-action: none;
+  }
+
+  .arcade-stats {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+    font-size: .74rem;
+    color: #9ec8b8;
+  }
+
+  .arcade-stats span:first-child { margin-right: auto; }
+
+  .arcade-stats button,
+  .victory-card button {
+    padding: 8px 12px;
+    border: 1px solid #3a4d46;
+    border-radius: 5px;
+    background: #111d19;
+    color: #9bb8ad;
+    font: inherit;
+    font-size: .72rem;
+    cursor: pointer;
+  }
+
+  .arcade-stats button:hover,
+  .victory-card button:hover { border-color: var(--amber); color: #ffd77a; }
+
+  .victory-card {
+    text-align: center;
+    animation: victory-in 1.2s ease both;
+  }
+
+  .victory-card h2 {
+    margin: 0 0 14px;
+    color: #eafff4;
+    font-size: clamp(2rem, 7vw, 4.6rem);
+    letter-spacing: .16em;
+    text-shadow: 0 0 20px rgba(110, 242, 164, .75), 0 0 60px rgba(110, 242, 164, .35);
+  }
+
+  .victory-card p {
+    margin: 0;
+    color: #9ec8b8;
+    font-size: .9rem;
+    line-height: 1.7;
+  }
+
+  .victory-card button { margin-top: 28px; padding: 10px 18px; }
+
+  @keyframes victory-in {
+    from { opacity: 0; transform: scale(.94); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
   @media (max-width: 620px) {
     .app { width: min(100% - 20px, 1000px); padding-top: 14px; }
     .prompt { display: none; }
@@ -456,7 +595,9 @@
   @media (prefers-reduced-motion: reduce) {
     .sigil,
     .nebula,
-    .stars { animation: none !important; }
+    .stars,
+    .arcade-launch,
+    .victory-card { animation: none !important; }
   }
 </style>
 </head>
@@ -475,7 +616,7 @@
       <span class="sigil" aria-hidden="true">◈</span>
       <div>
         <h1>ГЕЛИОС-7</h1>
-        <p>терминал восстановления связи · v1.1.1</p>
+        <p>терминал восстановления связи · v1.2.0</p>
       </div>
     </div>
     <div class="boss">
@@ -502,6 +643,8 @@
     <p id="hint">Загрузка состояния канала…</p>
   </section>
 
+  <button class="arcade-launch" id="arcade-btn" type="button" hidden>▶ Мини-игра: защити канал</button>
+
   <form class="command" id="form" autocomplete="off">
     <label class="prompt" id="prompt" for="input">cadet@helio-7:/$</label>
     <input id="input" name="command" type="text" spellcheck="false" maxlength="200"
@@ -510,6 +653,33 @@
     <button class="reset" id="reset" type="button">Начать заново</button>
   </form>
 </main>
+
+<div class="arcade-overlay" id="arcade-overlay" hidden>
+  <div class="arcade-panel">
+    <div class="arcade-head">
+      <span>ЗАЩИТА КАНАЛА · МИНИ-ИГРА</span>
+      <button class="arcade-close" id="arcade-close" type="button" aria-label="Закрыть мини-игру">×</button>
+    </div>
+    <p class="arcade-tip">
+      ← → или A/D — движение кораблика · Пробел или клик — стрельба ·
+      сбивай метеориты, береги 3 сердца
+    </p>
+    <canvas id="arcade-canvas" width="720" height="420" aria-label="Мини-игра: защита канала"></canvas>
+    <div class="arcade-stats">
+      <span id="arcade-kills">Сбито: 0 / 10</span>
+      <span id="arcade-lives">♥ ♥ ♥</span>
+      <button id="arcade-restart" type="button">Заново</button>
+    </div>
+  </div>
+</div>
+
+<div class="victory-overlay" id="victory-overlay" hidden>
+  <div class="victory-card">
+    <h2>ТЫ ПОБЕДИЛ</h2>
+    <p id="victory-detail">Связь восстановлена, канал защищён.</p>
+    <button id="victory-restart" type="button">Сыграть ещё раз</button>
+  </div>
+</div>
 
 <script>
 (() => {
@@ -524,6 +694,17 @@
   const hpTrack = document.getElementById("hp-track");
   const hintEl = document.getElementById("hint");
   const hintBox = document.getElementById("hint-box");
+  const arcadeBtn = document.getElementById("arcade-btn");
+  const arcadeOverlay = document.getElementById("arcade-overlay");
+  const arcadeClose = document.getElementById("arcade-close");
+  const arcadeRestart = document.getElementById("arcade-restart");
+  const arcadeKills = document.getElementById("arcade-kills");
+  const arcadeLives = document.getElementById("arcade-lives");
+  const canvas = document.getElementById("arcade-canvas");
+  const ctx = canvas.getContext("2d");
+  const victoryOverlay = document.getElementById("victory-overlay");
+  const victoryDetail = document.getElementById("victory-detail");
+  const victoryRestart = document.getElementById("victory-restart");
 
   const BANNER = [
     "╔════════════════════════════════════════════╗",
@@ -535,6 +716,7 @@
     "",
     "Доступные команды: pwd, ls, cd, cat, grep, help, clear",
     "Набери help, чтобы узнать, как работает каждая команда.",
+    "После миссии откроется мини-игра: защити канал.",
     ""
   ].join("\n");
 
@@ -565,7 +747,11 @@
     "  3. Найди маркер READY в журнале:    grep READY /station/events.log",
     "",
     "Подсказка под полем ввода всегда говорит, что делать сейчас.",
-    "Кнопка «Начать заново» очищает экран и сбрасывает прогресс."
+    "Кнопка «Начать заново» очищает экран и сбрасывает прогресс.",
+    "",
+    "После победы автоматически запускается мини-игра «Защита канала»:",
+    "кораблик стреляет по метеоритам. Сбивай метеориты, береги 3 сердца —",
+    "и увидишь финальную надпись."
   ].join("\n");
 
   // При открытии через file:// сервер недоступен, поэтому включается
@@ -792,6 +978,364 @@ auto_restart = false`
     };
   }
 
+  // ── Мини-игра «Защита канала» ─────────────────────────────────────────
+  // Полностью на клиенте: одинаково работает через HTTP, из file:// и в exe.
+  const ARCADE_TARGET = 10;
+  const ARCADE_W = canvas.width;
+  const ARCADE_H = canvas.height;
+  const arcadeKeys = { left: false, right: false, fire: false };
+  let arcade = null;
+  let arcadeAutoTimer = null;
+  let arcadeHideTimer = null;
+
+  const arcadeStars = Array.from({ length: 70 }, (_, i) => ({
+    x: (i * 137.51) % ARCADE_W,
+    y: (i * 71.37) % ARCADE_H,
+    r: i % 7 === 0 ? 1.5 : 0.9,
+    a: 0.2 + (i % 5) * 0.12
+  }));
+
+  function arcadeReset() {
+    arcade = {
+      ship: { x: ARCADE_W / 2, y: ARCADE_H - 44 },
+      bullets: [], meteors: [], particles: [],
+      kills: 0, lives: 3, spawn: 0.6, cooldown: 0,
+      last: 0, raf: 0, over: false
+    };
+    arcadeKills.textContent = "Сбито: 0 / " + ARCADE_TARGET;
+    arcadeLives.textContent = "♥ ♥ ♥";
+  }
+
+  function arcadeSpawnMeteor() {
+    const r = 12 + Math.random() * 12;
+    arcade.meteors.push({
+      x: r + Math.random() * (ARCADE_W - 2 * r),
+      y: -r - 8,
+      r: r,
+      speed: 80 + Math.random() * 60 + arcade.kills * 2,
+      drift: (Math.random() - 0.5) * 40,
+      tilt: Math.random() * Math.PI,
+      spin: (Math.random() - 0.5) * 2,
+      seed: Math.random() * 100
+    });
+  }
+
+  function arcadeFire() {
+    if (!arcade || arcade.over) return;
+    // Выбираем самый опасный метеорит — тот, что ближе к нижнему краю.
+    let target = null;
+    let bestY = -Infinity;
+    for (const m of arcade.meteors) {
+      if (m.y < 0) continue;
+      if (m.y > bestY) { bestY = m.y; target = m; }
+    }
+    let dx = 0;
+    let dy = -1;
+    if (target) {
+      // Стреляем с упреждением: метеорит успевает сдвинуться за время полёта.
+      const dist = Math.hypot(target.x - arcade.ship.x, target.y - arcade.ship.y) || 1;
+      const flight = dist / 520;
+      const tx = target.x + target.drift * flight;
+      const ty = target.y + target.speed * flight;
+      const len = Math.hypot(tx - arcade.ship.x, ty - arcade.ship.y) || 1;
+      dx = (tx - arcade.ship.x) / len;
+      dy = (ty - arcade.ship.y) / len;
+    }
+    arcade.bullets.push({
+      x: arcade.ship.x, y: arcade.ship.y - 18,
+      vx: dx * 520, vy: dy * 520, life: 1.5
+    });
+  }
+
+  function arcadeHit() {
+    const g = arcade;
+    g.lives--;
+    arcadeLives.textContent = "♥ ".repeat(Math.max(0, g.lives)).trim() || "—";
+    if (g.lives <= 0) {
+      g.over = true;
+      arcadeKills.textContent = "Кораблик повреждён — нажми «Заново».";
+    }
+  }
+
+  function arcadeStep(dt) {
+    const g = arcade;
+    if (!g || g.over) return;
+
+    const dir = Number(arcadeKeys.right) - Number(arcadeKeys.left);
+    g.ship.x = Math.max(24, Math.min(ARCADE_W - 24, g.ship.x + dir * 280 * dt));
+
+    g.cooldown -= dt;
+    if (arcadeKeys.fire && g.cooldown <= 0) {
+      arcadeFire();
+      g.cooldown = 0.12;
+    }
+
+    g.spawn -= dt;
+    if (g.spawn <= 0) {
+      arcadeSpawnMeteor();
+      g.spawn = Math.max(0.5, 0.9 - g.kills * 0.02);
+    }
+
+    for (const b of g.bullets) {
+      b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt;
+    }
+    g.bullets = g.bullets.filter(b =>
+      b.life > 0 && b.x > -20 && b.x < ARCADE_W + 20 && b.y > -20 && b.y < ARCADE_H + 20);
+
+    for (const m of g.meteors) {
+      m.y += m.speed * dt;
+      m.x += m.drift * dt;
+      m.tilt += m.spin * dt;
+      if (m.x < m.r) { m.x = m.r; m.drift *= -1; }
+      if (m.x > ARCADE_W - m.r) { m.x = ARCADE_W - m.r; m.drift *= -1; }
+      if (Math.hypot(m.x - g.ship.x, m.y - g.ship.y) < m.r + 12) {
+        m.dead = true;
+        arcadeHit();
+      } else if (m.y - m.r > ARCADE_H) {
+        m.dead = true;
+        arcadeHit();
+      }
+    }
+
+    for (const b of g.bullets) {
+      if (b.dead) continue;
+      for (const m of g.meteors) {
+        if (m.dead) continue;
+        if (Math.hypot(m.x - b.x, m.y - b.y) < m.r + 8) {
+          m.dead = true;
+          b.dead = true;
+          g.kills++;
+          for (let i = 0; i < 8; i++) {
+            const a = Math.random() * Math.PI * 2;
+            g.particles.push({
+              x: m.x, y: m.y,
+              vx: Math.cos(a) * (40 + Math.random() * 90),
+              vy: Math.sin(a) * (40 + Math.random() * 90),
+              life: 0.5 + Math.random() * 0.3, max: 0.8
+            });
+          }
+          arcadeKills.textContent = "Сбито: " + g.kills + " / " + ARCADE_TARGET;
+          break;
+        }
+      }
+    }
+
+    g.meteors = g.meteors.filter(m => !m.dead);
+    g.bullets = g.bullets.filter(b => !b.dead);
+    for (const p of g.particles) {
+      p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt;
+    }
+    g.particles = g.particles.filter(p => p.life > 0);
+
+    if (!g.over && g.kills >= ARCADE_TARGET) arcadeWin();
+  }
+
+  function arcadeDraw() {
+    const g = arcade;
+    if (!g) return;
+
+    const sky = ctx.createLinearGradient(0, 0, 0, ARCADE_H);
+    sky.addColorStop(0, "#04120e");
+    sky.addColorStop(1, "#010504");
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, ARCADE_W, ARCADE_H);
+
+    for (const s of arcadeStars) {
+      ctx.fillStyle = "rgba(207,233,221," + s.a + ")";
+      ctx.fillRect(s.x, s.y, s.r, s.r);
+    }
+
+    ctx.fillStyle = "rgba(110,242,164,.09)";
+    ctx.fillRect(0, ARCADE_H - 2, ARCADE_W, 2);
+
+    for (const m of g.meteors) {
+      ctx.save();
+      ctx.translate(m.x, m.y);
+      ctx.rotate(m.tilt);
+      ctx.beginPath();
+      for (let i = 0; i < 8; i++) {
+        const a = (i / 8) * Math.PI * 2;
+        const r = m.r * (0.78 + ((i * 7 + Math.floor(m.seed)) % 5) / 12);
+        const px = Math.cos(a) * r;
+        const py = Math.sin(a) * r;
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.fillStyle = "#56685f";
+      ctx.fill();
+      ctx.strokeStyle = "#9ab2a5";
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    ctx.strokeStyle = "#6ef2a4";
+    ctx.lineWidth = 2;
+    ctx.shadowColor = "#6ef2a4";
+    ctx.shadowBlur = 8;
+    for (const b of g.bullets) {
+      ctx.beginPath();
+      ctx.moveTo(b.x, b.y);
+      ctx.lineTo(b.x - b.vx * 0.018, b.y - b.vy * 0.018);
+      ctx.stroke();
+    }
+    ctx.shadowBlur = 0;
+
+    for (const p of g.particles) {
+      ctx.fillStyle = "rgba(255,200,87," + Math.max(0, p.life / p.max) + ")";
+      ctx.fillRect(p.x, p.y, 2, 2);
+    }
+
+    // Кораблик-«корбалик».
+    const x = g.ship.x;
+    const y = g.ship.y;
+    ctx.save();
+    ctx.translate(x, y);
+    if (arcadeKeys.left || arcadeKeys.right) {
+      ctx.fillStyle = "rgba(255,180,70,.85)";
+      ctx.beginPath();
+      ctx.moveTo(-5, 10);
+      ctx.lineTo(0, 21 + Math.random() * 6);
+      ctx.lineTo(5, 10);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.beginPath();
+    ctx.moveTo(0, -20);
+    ctx.lineTo(13, 14);
+    ctx.lineTo(0, 8);
+    ctx.lineTo(-13, 14);
+    ctx.closePath();
+    ctx.fillStyle = "#1d6b4b";
+    ctx.fill();
+    ctx.strokeStyle = "#6ef2a4";
+    ctx.lineWidth = 1.6;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(0, -2, 3, 0, Math.PI * 2);
+    ctx.fillStyle = "#ffd77a";
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function arcadeFrame(now) {
+    if (!arcade || arcadeOverlay.hidden) return;
+    if (!arcade.last) arcade.last = now;
+    // Догоняем пропущенное время небольшими шагами: даже если браузер
+    // заглушил requestAnimationFrame, игра не замедлится в несколько раз.
+    let elapsed = Math.min((now - arcade.last) / 1000, 1);
+    arcade.last = now;
+    while (elapsed > 0 && arcade && !arcade.over) {
+      const step = Math.min(elapsed, 0.05);
+      arcadeStep(step);
+      elapsed -= step;
+    }
+    arcadeDraw();
+    if (arcade && !arcade.over) {
+      arcade.raf = requestAnimationFrame(arcadeFrame);
+    }
+  }
+
+  function arcadeWin() {
+    if (!arcade) return;
+    arcade.over = true;
+    if (arcade.raf) cancelAnimationFrame(arcade.raf);
+    arcadeOverlay.classList.remove("visible");
+    victoryDetail.textContent =
+      "Связь восстановлена, " + arcade.kills + " метеоритов сбито. Канал защищён.";
+    setTimeout(() => {
+      arcadeOverlay.hidden = true;
+      victoryOverlay.hidden = false;
+      requestAnimationFrame(() => victoryOverlay.classList.add("visible"));
+    }, 650);
+  }
+
+  function openArcade() {
+    if (arcadeAutoTimer) { clearTimeout(arcadeAutoTimer); arcadeAutoTimer = null; }
+    if (arcadeHideTimer) { clearTimeout(arcadeHideTimer); arcadeHideTimer = null; }
+    if (!victoryOverlay.hidden) return;
+
+    arcadeReset();
+    arcadeOverlay.hidden = false;
+    requestAnimationFrame(() => arcadeOverlay.classList.add("visible"));
+    input.blur();
+    arcade.raf = requestAnimationFrame(arcadeFrame);
+  }
+
+  function closeArcade() {
+    if (arcade && arcade.raf) cancelAnimationFrame(arcade.raf);
+    arcade = null;
+    arcadeKeys.left = arcadeKeys.right = arcadeKeys.fire = false;
+    if (!arcadeOverlay.hidden) {
+      arcadeOverlay.classList.remove("visible");
+      arcadeHideTimer = setTimeout(() => { arcadeOverlay.hidden = true; }, 600);
+    }
+  }
+
+  function hideVictory() {
+    victoryOverlay.classList.remove("visible");
+    setTimeout(() => { victoryOverlay.hidden = true; }, 650);
+  }
+
+  function canvasPointerX(event) {
+    const rect = canvas.getBoundingClientRect();
+    return Math.max(24, Math.min(ARCADE_W - 24, (event.clientX - rect.left) / rect.width * ARCADE_W));
+  }
+
+  arcadeBtn.addEventListener("click", openArcade);
+  arcadeClose.addEventListener("click", closeArcade);
+
+  arcadeRestart.addEventListener("click", () => {
+    if (!arcade) return;
+    if (arcade.raf) cancelAnimationFrame(arcade.raf);
+    arcadeReset();
+    arcade.last = 0;
+    arcade.raf = requestAnimationFrame(arcadeFrame);
+  });
+
+  victoryRestart.addEventListener("click", () => {
+    hideVictory();
+    resetBtn.click();
+  });
+
+  window.addEventListener("keydown", (event) => {
+    if (arcadeOverlay.hidden || !arcade) return;
+    const k = event.key;
+    if (k === "ArrowLeft" || k === "a" || k === "A" || k === "ф") {
+      arcadeKeys.left = true; event.preventDefault();
+    } else if (k === "ArrowRight" || k === "d" || k === "D" || k === "в") {
+      arcadeKeys.right = true; event.preventDefault();
+    } else if (k === " " || k === "Spacebar") {
+      arcadeKeys.fire = true; event.preventDefault();
+    }
+  });
+
+  window.addEventListener("keyup", (event) => {
+    const k = event.key;
+    if (k === "ArrowLeft" || k === "a" || k === "A" || k === "ф") arcadeKeys.left = false;
+    if (k === "ArrowRight" || k === "d" || k === "D" || k === "в") arcadeKeys.right = false;
+    if (k === " " || k === "Spacebar") arcadeKeys.fire = false;
+  });
+
+  window.addEventListener("blur", () => {
+    arcadeKeys.left = arcadeKeys.right = arcadeKeys.fire = false;
+  });
+
+  canvas.addEventListener("pointermove", (event) => {
+    if (arcade) arcade.ship.x = canvasPointerX(event);
+  });
+
+  canvas.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    if (!arcade) return;
+    arcade.ship.x = canvasPointerX(event);
+    arcadeKeys.fire = true;
+    arcadeFire();
+  });
+
+  canvas.addEventListener("pointerup", () => { arcadeKeys.fire = false; });
+  canvas.addEventListener("pointerleave", () => { arcadeKeys.fire = false; });
+
   let state = { cwd: "/", hp: 3, max_hp: 3, done: 0, won: false, hint: "" };
   let history = [];
   let historyPos = 0;
@@ -828,6 +1372,7 @@ auto_restart = false`
     hpTrack.setAttribute("aria-label", next.hp + " из " + next.max_hp + " HP");
     hintEl.textContent = next.hint;
     hintBox.classList.toggle("win", next.won);
+    arcadeBtn.hidden = !next.won;
     document.title = next.won
       ? "Связь восстановлена — Гелиос-7"
       : "Гелиос-7 — восстанови связь";
@@ -929,7 +1474,8 @@ auto_restart = false`
         append("║        СВЯЗЬ ВОССТАНОВЛЕНА                 ║");
         append("╚════════════════════════════════════════════╝");
         append("Станция снова на связи. Отличная работа, кадет.");
-        append("Нажми «Начать заново», чтобы пройти миссию ещё раз.");
+        append("Запускаю мини-игру «Защита канала»…");
+        arcadeAutoTimer = setTimeout(openArcade, 1200);
       }
     } catch (err) {
       if (myEpoch !== epoch) return;
@@ -969,6 +1515,11 @@ auto_restart = false`
     input.disabled = true;
     epoch++;
     busy = false;
+
+    if (arcadeAutoTimer) { clearTimeout(arcadeAutoTimer); arcadeAutoTimer = null; }
+    closeArcade();
+    if (!victoryOverlay.hidden) hideVictory();
+
     history = [];
     historyPos = 0;
     input.value = "";
