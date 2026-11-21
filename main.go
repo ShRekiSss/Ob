@@ -29,7 +29,7 @@ var assets embed.FS
 const (
 	sessionCookie  = "station_sid"
 	sessionTTL     = 24 * time.Hour
-	version        = "1.4.0"
+	version        = "1.4.1"
 	latestRelease  = "https://api.github.com/repos/ShRekiSss/Ob/releases/latest"
 	applyUpdateArg = "--apply-update"
 )
