@@ -125,6 +125,24 @@ func TestHTTPUnknownPath(t *testing.T) {
 	}
 }
 
+func TestVersionNewer(t *testing.T) {
+	cases := []struct {
+		latest, current string
+		want            bool
+	}{
+		{"v1.4.0", "1.3.0", true},
+		{"v1.3.1", "1.3.0", true},
+		{"v1.3.0", "1.3.0", false},
+		{"v1.2.9", "1.3.0", false},
+		{"2.0.0", "1.9.9", true},
+	}
+	for _, c := range cases {
+		if got := versionNewer(c.latest, c.current); got != c.want {
+			t.Errorf("versionNewer(%q, %q) = %v, хочется %v", c.latest, c.current, got, c.want)
+		}
+	}
+}
+
 func TestHTTPHealth(t *testing.T) {
 	srv := httptest.NewServer(newServer().handler())
 	defer srv.Close()

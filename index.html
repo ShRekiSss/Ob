@@ -444,30 +444,20 @@
 
   .reset:disabled { opacity: .5; cursor: wait; }
 
-  .cadet-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: .68rem;
+  .victory-card .final-name {
+    margin: 0 0 14px;
+    color: var(--green);
+    font-size: clamp(1.6rem, 5vw, 3.1rem);
     letter-spacing: .16em;
-    color: var(--muted);
+    line-height: 1.15;
+    text-transform: uppercase;
+    text-shadow: 0 0 24px rgba(110, 242, 164, .55);
   }
 
-  .cadet-row input {
-    flex: 1;
-    min-width: 0;
-    padding: 7px 10px;
-    border: 1px solid var(--line);
-    border-radius: 5px;
-    background: rgba(8, 17, 15, .8);
-    color: #e6fff3;
-    font: inherit;
-    font-size: .76rem;
-    letter-spacing: normal;
-    outline: 0;
+  .defeat-card .final-name {
+    color: var(--amber);
+    text-shadow: 0 0 24px rgba(255, 180, 70, .45);
   }
-
-  .cadet-row input:focus { border-color: var(--line-bright); }
 
   .arcade-launch {
     align-self: flex-start;
@@ -685,7 +675,7 @@
       <span class="sigil" aria-hidden="true">◈</span>
       <div>
         <h1>ГЕЛИОС-7</h1>
-        <p>терминал восстановления связи · v1.3.0</p>
+        <p>терминал восстановления связи · v1.4.0</p>
       </div>
     </div>
     <div class="boss">
@@ -713,12 +703,6 @@
   </section>
 
   <button class="arcade-launch" id="arcade-btn" type="button" hidden>▶ Мини-игра: защити канал</button>
-
-  <div class="cadet-row">
-    <label for="cadet-name">ИМЯ КАДЕТА</label>
-    <input id="cadet-name" type="text" maxlength="24" value="Кадет"
-           autocomplete="off" spellcheck="false" placeholder="как тебя зовут?">
-  </div>
 
   <form class="command" id="form" autocomplete="off">
     <label class="prompt" id="prompt" for="input">cadet@helio-7:/$</label>
@@ -754,6 +738,7 @@
 <div class="victory-overlay" id="victory-overlay" hidden>
   <div class="victory-card">
     <h2>ТЫ ПОБЕДИЛ</h2>
+    <p class="final-name" id="victory-name">КАДЕТ</p>
     <p id="victory-detail">Связь восстановлена, канал защищён.</p>
     <button id="victory-restart" type="button">Сыграть ещё раз</button>
   </div>
@@ -763,6 +748,7 @@
   <div class="victory-card defeat-card">
     <div class="defeat-emoji" aria-hidden="true">👎</div>
     <h2>ТЫ ПРОИГРАЛ</h2>
+    <p class="final-name" id="defeat-name">КАДЕТ</p>
     <p id="defeat-detail"></p>
     <div class="defeat-buttons">
       <button id="defeat-retry" type="button">Ещё раз</button>
@@ -797,14 +783,15 @@
   const canvas = document.getElementById("arcade-canvas");
   const ctx = canvas.getContext("2d");
   const victoryOverlay = document.getElementById("victory-overlay");
+  const victoryName = document.getElementById("victory-name");
   const victoryDetail = document.getElementById("victory-detail");
   const victoryRestart = document.getElementById("victory-restart");
   const defeatOverlay = document.getElementById("defeat-overlay");
+  const defeatName = document.getElementById("defeat-name");
   const defeatDetail = document.getElementById("defeat-detail");
   const defeatRetry = document.getElementById("defeat-retry");
   const defeatReset = document.getElementById("defeat-reset");
   const defeatClose = document.getElementById("defeat-close");
-  const cadetName = document.getElementById("cadet-name");
 
   const BANNER = [
     "╔════════════════════════════════════════════╗",
@@ -839,6 +826,7 @@
     "  clear               Очищает экран, миссия продолжается.",
     "  help, ?             Показывает эту справку.",
     "  gadget              Выдаёт случайный гаджет.",
+    "  name ИМЯ           Задать имя кадета (появится в финале).",
     "",
     "КАК ПРОЙТИ МИССИЮ",
     "  1. Посмотри, что лежит в /station:  ls /station",
@@ -904,6 +892,7 @@ auto_restart = false`
     let viewedStation = false;
     let readBrief = false;
     let foundReady = false;
+    let cadetName = "Кадет";
 
     function normalize(input) {
       const stack = [];
@@ -972,7 +961,8 @@ auto_restart = false`
         max_hp: MAX_HP,
         done: done,
         won: done === MAX_HP,
-        hint: hint()
+        hint: hint(),
+        name: cadetName
       };
     }
 
@@ -1065,6 +1055,12 @@ auto_restart = false`
         return "Выдан гаджет: " + randomGadget();
       }
 
+      if (cmd === "name") {
+        if (args.length === 0) return "Имя кадета: " + cadetName;
+        cadetName = args.join(" ").slice(0, 24);
+        return "Имя кадета: " + cadetName;
+      }
+
       return "команда не найдена: " + cmd + "\nДоступные команды: pwd, ls, cd, cat, grep, help, clear";
     }
 
@@ -1095,7 +1091,7 @@ auto_restart = false`
   }
 
   function cadetLabel() {
-    return (cadetName.value || "").trim() || "Кадет";
+    return ((state && state.name) || "Кадет").trim() || "Кадет";
   }
 
   // ── Мини-игра «Защита канала» ─────────────────────────────────────────
@@ -1595,8 +1591,9 @@ auto_restart = false`
     arcade.over = true;
     if (arcade.raf) cancelAnimationFrame(arcade.raf);
     arcadeOverlay.classList.remove("visible");
-    victoryDetail.textContent = cadetLabel() + " победил! Сбито " + METEOR_GOAL +
-      " метеоритов и " + SHIP_GOAL + " кораблей. Найден гаджет: «" + randomGadget() + "».";
+    victoryName.textContent = cadetLabel();
+    victoryDetail.textContent = "Сбито " + METEOR_GOAL + " метеоритов и " + SHIP_GOAL +
+      " кораблей. Найден гаджет: «" + randomGadget() + "».";
     arcadeFinishTimer = setTimeout(() => {
       arcadeOverlay.hidden = true;
       victoryOverlay.hidden = false;
@@ -1608,8 +1605,8 @@ auto_restart = false`
     if (!arcade) return;
     if (arcade.raf) cancelAnimationFrame(arcade.raf);
     arcadeOverlay.classList.remove("visible");
-    defeatDetail.textContent = cadetLabel() + " проиграл. Канал пробит метеоритами. " +
-      "Гаджет: «" + randomGadget() + "».";
+    defeatName.textContent = cadetLabel();
+    defeatDetail.textContent = "Канал пробит метеоритами. Гаджет: «" + randomGadget() + "».";
     arcadeFinishTimer = setTimeout(() => {
       arcadeOverlay.hidden = true;
       defeatOverlay.hidden = false;
@@ -1731,7 +1728,7 @@ auto_restart = false`
   canvas.addEventListener("pointerup", () => { arcadeKeys.fire = false; });
   canvas.addEventListener("pointerleave", () => { arcadeKeys.fire = false; });
 
-  let state = { cwd: "/", hp: 3, max_hp: 3, done: 0, won: false, hint: "" };
+  let state = { cwd: "/", hp: 3, max_hp: 3, done: 0, won: false, hint: "", name: "Кадет" };
   let history = [];
   let historyPos = 0;
   let busy = false;

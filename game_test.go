@@ -309,6 +309,25 @@ func TestGadgetCommand(t *testing.T) {
 	}
 }
 
+func TestNameCommand(t *testing.T) {
+	s := NewSession()
+
+	if got := s.Execute("name").Output; got != "Имя кадета: Кадет" {
+		t.Fatalf("начальное имя: %q", got)
+	}
+
+	res := s.Execute("name Никита")
+	if res.Output != "Имя кадета: Никита" || res.State.Name != "Никита" {
+		t.Fatalf("name вернул %q, состояние %+v", res.Output, res.State)
+	}
+
+	// Сброс миссии сохраняет имя кадета.
+	s.Reset()
+	if s.State().Name != "Никита" {
+		t.Fatalf("имя потерялось после сброса: %+v", s.State())
+	}
+}
+
 func TestLsOrderIsStable(t *testing.T) {
 	s := NewSession()
 	first := s.Execute("ls /station").Output

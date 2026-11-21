@@ -61,6 +61,7 @@ const helpText = `СПРАВКА «ГЕЛИОС-7» — как работать 
   clear               Очищает экран, миссия продолжается.
   help, ?             Показывает эту справку.
   gadget              Выдаёт случайный гаджет.
+  name ИМЯ           Задать имя кадета (появится в финале).
 
 КАК ПРОЙТИ МИССИЮ
   1. Посмотри, что лежит в /station:  ls /station
@@ -107,7 +108,8 @@ var missionFS = map[string]fsNode{
 type Session struct {
 	mu sync.Mutex
 
-	cwd string
+	cwd       string
+	cadetName string
 
 	viewedStation bool
 	readBrief     bool
@@ -116,6 +118,7 @@ type Session struct {
 
 type Snapshot struct {
 	Cwd   string `json:"cwd"`
+	Name  string `json:"name"`
 	HP    int    `json:"hp"`
 	MaxHP int    `json:"max_hp"`
 	Done  int    `json:"done"`
@@ -129,7 +132,7 @@ type Result struct {
 }
 
 func NewSession() *Session {
-	return &Session{cwd: "/"}
+	return &Session{cwd: "/", cadetName: "Кадет"}
 }
 
 func (s *Session) Execute(line string) Result {
@@ -171,6 +174,7 @@ func (s *Session) snapshot() Snapshot {
 
 	return Snapshot{
 		Cwd:   s.cwd,
+		Name:  s.cadetName,
 		HP:    maxHP - done,
 		MaxHP: maxHP,
 		Done:  done,
@@ -226,6 +230,16 @@ func (s *Session) run(line string) string {
 		return helpText
 	case "gadget":
 		return "Выдан гаджет: " + randomGadget()
+	case "name":
+		if len(args) == 0 {
+			return "Имя кадета: " + s.cadetName
+		}
+		name := strings.Join(args, " ")
+		if len(name) > 24 {
+			name = name[:24]
+		}
+		s.cadetName = name
+		return "Имя кадета: " + s.cadetName
 	default:
 		return fmt.Sprintf("команда не найдена: %s\nДоступные команды: pwd, ls, cd, cat, grep, help, clear", cmd)
 	}
