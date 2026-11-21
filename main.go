@@ -26,7 +26,7 @@ var assets embed.FS
 const (
 	sessionCookie = "station_sid"
 	sessionTTL    = 24 * time.Hour
-	version       = "1.2.0"
+	version       = "1.2.1"
 )
 
 var startedAt = time.Now()
