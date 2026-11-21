@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"crypto/rand"
+	"crypto/tls"
+	"crypto/x509"
 	"embed"
 	"encoding/hex"
 	"encoding/json"
@@ -29,7 +31,7 @@ var assets embed.FS
 const (
 	sessionCookie  = "station_sid"
 	sessionTTL     = 24 * time.Hour
-	version        = "1.4.1"
+	version        = "1.4.2"
 	latestRelease  = "https://api.github.com/repos/ShRekiSss/Ob/releases/latest"
 	applyUpdateArg = "--apply-update"
 )
@@ -246,9 +248,35 @@ func versionNewer(latest, current string) bool {
 	return false
 }
 
+func updateClient(timeout time.Duration) *http.Client {
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	pool, err := x509.SystemCertPool()
+	if err != nil || pool == nil {
+		pool = x509.NewCertPool()
+	}
+
+	// Если сеть использует свой корневой сертификат (корпоративный прокси,
+	// антивирус), его можно положить в ca.pem рядом с helios7.exe.
+	if exe, exeErr := os.Executable(); exeErr == nil {
+		if pem, pemErr := os.ReadFile(filepath.Join(filepath.Dir(exe), "ca.pem")); pemErr == nil {
+			if pool.AppendCertsFromPEM(pem) {
+				log.Print("загружен дополнительный сертификат ca.pem")
+			}
+		}
+	}
+
+	tlsConfig := &tls.Config{MinVersion: tls.VersionTLS12, RootCAs: pool}
+	if os.Getenv("NO_UPDATE_TLS_VERIFY") == "1" {
+		tlsConfig.InsecureSkipVerify = true //nolint:gosec -- только по явному включению пользователем
+		log.Print("ВНИМАНИЕ: проверка TLS при обновлении отключена (NO_UPDATE_TLS_VERIFY=1)")
+	}
+	transport.TLSClientConfig = tlsConfig
+	return &http.Client{Timeout: timeout, Transport: transport}
+}
+
 func fetchLatestRelease() (releaseInfo, error) {
 	var rel releaseInfo
-	client := &http.Client{Timeout: 8 * time.Second}
+	client := updateClient(8 * time.Second)
 	req, err := http.NewRequest(http.MethodGet, latestRelease, nil)
 	if err != nil {
 		return rel, err
@@ -281,6 +309,9 @@ func maybeUpdate() {
 	rel, err := fetchLatestRelease()
 	if err != nil {
 		log.Printf("проверка обновлений пропущена: %v", err)
+		if strings.Contains(strings.ToLower(err.Error()), "certificate") {
+			log.Print("совет: сверь дату и время в Windows; если сеть подменяет сертификат, положи его корень в ca.pem рядом с exe или задай NO_UPDATE_TLS_VERIFY=1")
+		}
 		return
 	}
 	if !versionNewer(rel.TagName, version) {
@@ -308,7 +339,7 @@ func maybeUpdate() {
 	updatePath := filepath.Join(dir, "helios7-update.exe")
 	installPath := filepath.Join(dir, "helios7-install.exe")
 
-	client := &http.Client{Timeout: 40 * time.Second}
+	client := updateClient(40 * time.Second)
 	res, err := client.Get(assetURL)
 	if err != nil {
 		log.Printf("скачивание обновления не удалось: %v", err)
