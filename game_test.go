@@ -91,7 +91,7 @@ func TestViewedStationRequiresLs(t *testing.T) {
 	if res.State.HP != 3 {
 		t.Fatalf("один cd /station не должен снимать HP, HP = %d", res.State.HP)
 	}
-	if !strings.Contains(res.State.Hint, "Выполни ls") {
+	if !strings.Contains(res.State.Hint, "Цель 1/3") || !strings.Contains(res.State.Hint, "выполни ls") {
 		t.Fatalf("в /station подсказка должна предлагать ls: %q", res.State.Hint)
 	}
 
@@ -232,20 +232,45 @@ func TestReset(t *testing.T) {
 func TestHintProgresses(t *testing.T) {
 	s := NewSession()
 
-	if !strings.Contains(s.State().Hint, "Осмотри корень") {
-		t.Fatalf("начальная подсказка: %q", s.State().Hint)
+	hint := s.State().Hint
+	if !strings.Contains(hint, "Цель 1/3") || !strings.Contains(hint, "ls /station") {
+		t.Fatalf("начальная подсказка: %q", hint)
 	}
 	s.Execute("ls /station")
-	if !strings.Contains(s.State().Hint, "brief.txt") {
-		t.Fatalf("подсказка после первой цели: %q", s.State().Hint)
+	hint = s.State().Hint
+	if !strings.Contains(hint, "Цель 2/3") || !strings.Contains(hint, "cat /station/brief.txt") {
+		t.Fatalf("подсказка после первой цели: %q", hint)
 	}
 	s.Execute("cat /station/brief.txt")
-	if !strings.Contains(s.State().Hint, "grep") {
-		t.Fatalf("подсказка после второй цели: %q", s.State().Hint)
+	hint = s.State().Hint
+	if !strings.Contains(hint, "Цель 3/3") || !strings.Contains(hint, "grep READY /station/events.log") {
+		t.Fatalf("подсказка после второй цели: %q", hint)
 	}
 	s.Execute("grep READY /station/events.log")
 	if !strings.Contains(s.State().Hint, "Связь восстановлена") {
 		t.Fatalf("подсказка после победы: %q", s.State().Hint)
+	}
+}
+
+func TestHintsUseRelativePathsInsideStation(t *testing.T) {
+	s := NewSession()
+	s.Execute("cd /station")
+
+	hint := s.State().Hint
+	if !strings.Contains(hint, "Цель 1/3") || !strings.Contains(hint, "выполни ls") {
+		t.Fatalf("подсказка в /station: %q", hint)
+	}
+
+	s.Execute("ls")
+	hint = s.State().Hint
+	if !strings.Contains(hint, "cat brief.txt") || strings.Contains(hint, "/station/brief.txt") {
+		t.Fatalf("подсказка должна предлагать относительный путь: %q", hint)
+	}
+
+	s.Execute("cat brief.txt")
+	hint = s.State().Hint
+	if !strings.Contains(hint, "grep READY events.log") || strings.Contains(hint, "/station/events.log") {
+		t.Fatalf("подсказка должна предлагать относительный путь: %q", hint)
 	}
 }
 

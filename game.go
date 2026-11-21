@@ -140,13 +140,19 @@ func (s *Session) hint() string {
 		return "Связь восстановлена. Можно осмотреться или начать миссию заново."
 	case !s.viewedStation:
 		if s.cwd == "/station" {
-			return "Ты в каталоге /station. Выполни ls, чтобы осмотреть его содержимое."
+			return "Цель 1/3: выполни ls — увидишь brief.txt и events.log."
 		}
-		return "Осмотри корень файловой системы и найди каталог станции. Пригодятся ls и cd."
+		return "Цель 1/3: выполни ls /station или cd /station, затем ls."
 	case !s.readBrief:
-		return "В каталоге /station лежит brief.txt. Прочитай его командой cat."
+		if s.cwd == "/station" {
+			return "Цель 2/3: выполни cat brief.txt — прочитай бортовой журнал."
+		}
+		return "Цель 2/3: выполни cat /station/brief.txt — прочитай бортовой журнал."
 	default:
-		return "В журнале events.log найди строку с маркером READY. Используй grep СЛОВО ФАЙЛ."
+		if s.cwd == "/station" {
+			return "Цель 3/3: выполни grep READY events.log — найди строку с маркером READY."
+		}
+		return "Цель 3/3: выполни grep READY /station/events.log — найди строку с маркером READY."
 	}
 }
 
