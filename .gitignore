@@ -1,6 +1,8 @@
 # Бинарник от `go build` в корне проекта
 /Ob
 /station-mission
+/helios7.exe
+/helios7
 
 # Артефакты тестов и редакторов
 *.test

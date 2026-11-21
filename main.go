@@ -6,9 +6,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -162,7 +165,9 @@ func writeJSON(w http.ResponseWriter, status int, value any) {
 func main() {
 	addr := os.Getenv("ADDR")
 	if addr == "" {
-		addr = ":8080"
+		// Слушаем только loopback: так игра не просит доступ в брандмауэре
+		// Windows и не торчит в локальную сеть.
+		addr = "127.0.0.1:8080"
 	}
 
 	srv := &http.Server{
@@ -178,8 +183,26 @@ func main() {
 	if strings.HasPrefix(displayAddr, ":") {
 		displayAddr = "localhost" + displayAddr
 	}
-	log.Printf("станция «Гелиос-7» на связи: http://%s", displayAddr)
+	pageURL := "http://" + displayAddr
+	log.Printf("станция «Гелиос-7» на связи: %s", pageURL)
+
+	// При двойном щелчке по exe на Windows сразу открываем браузер.
+	if runtime.GOOS == "windows" {
+		go func() {
+			time.Sleep(400 * time.Millisecond)
+			_ = exec.Command("rundll32", "url.dll,FileProtocolHandler", pageURL).Start()
+		}()
+	}
+
 	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		log.Fatal(err)
+		log.Printf("не удалось запустить сервер: %v", err)
+		log.Printf("скорее всего порт %s занят. Задай другой, например:", addr)
+		log.Printf("  Windows:  set ADDR=127.0.0.1:9090 && helios7.exe")
+		log.Printf("  Linux:    ADDR=127.0.0.1:9090 ./helios7")
+		if runtime.GOOS == "windows" {
+			fmt.Print("Нажми Enter, чтобы закрыть окно…")
+			_, _ = fmt.Scanln()
+		}
+		os.Exit(1)
 	}
 }
