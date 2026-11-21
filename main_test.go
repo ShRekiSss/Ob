@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/cookiejar"
@@ -122,6 +123,18 @@ func TestHTTPUnknownPath(t *testing.T) {
 
 	if res.StatusCode != http.StatusNotFound {
 		t.Fatalf("неизвестный путь вернул %d", res.StatusCode)
+	}
+}
+
+func TestIsCertificateError(t *testing.T) {
+	if !isCertificateError(errors.New("tls: failed to verify certificate: x509: certificate signed by unknown authority")) {
+		t.Fatal("ошибка сертификата не распознана")
+	}
+	if isCertificateError(errors.New("dial tcp: connection refused")) {
+		t.Fatal("обычная сетевая ошибка принята за сертификат")
+	}
+	if isCertificateError(nil) {
+		t.Fatal("nil принят за ошибку")
 	}
 }
 

@@ -249,6 +249,10 @@ func versionNewer(latest, current string) bool {
 }
 
 func updateClient(timeout time.Duration) *http.Client {
+	return updateClientMode(timeout, os.Getenv("NO_UPDATE_TLS_VERIFY") == "1")
+}
+
+func updateClientMode(timeout time.Duration, insecure bool) *http.Client {
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	pool, err := x509.SystemCertPool()
 	if err != nil || pool == nil {
@@ -266,17 +270,23 @@ func updateClient(timeout time.Duration) *http.Client {
 	}
 
 	tlsConfig := &tls.Config{MinVersion: tls.VersionTLS12, RootCAs: pool}
-	if os.Getenv("NO_UPDATE_TLS_VERIFY") == "1" {
-		tlsConfig.InsecureSkipVerify = true //nolint:gosec -- только по явному включению пользователем
-		log.Print("ВНИМАНИЕ: проверка TLS при обновлении отключена (NO_UPDATE_TLS_VERIFY=1)")
+	if insecure {
+		tlsConfig.InsecureSkipVerify = true //nolint:gosec -- явный обход для сетей с подменой TLS
 	}
 	transport.TLSClientConfig = tlsConfig
 	return &http.Client{Timeout: timeout, Transport: transport}
 }
 
-func fetchLatestRelease() (releaseInfo, error) {
+func isCertificateError(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := strings.ToLower(err.Error())
+	return strings.Contains(msg, "x509") || strings.Contains(msg, "certificate")
+}
+
+func fetchLatestReleaseWith(client *http.Client) (releaseInfo, error) {
 	var rel releaseInfo
-	client := updateClient(8 * time.Second)
 	req, err := http.NewRequest(http.MethodGet, latestRelease, nil)
 	if err != nil {
 		return rel, err
@@ -297,6 +307,27 @@ func fetchLatestRelease() (releaseInfo, error) {
 	return rel, nil
 }
 
+// fetchLatestRelease пробует обычную проверку сертификата, а если сеть
+// подменяет TLS (корпоративный прокси/антивирус), повторяет без проверки.
+func fetchLatestRelease() (releaseInfo, bool, error) {
+	envInsecure := os.Getenv("NO_UPDATE_TLS_VERIFY") == "1"
+
+	rel, err := fetchLatestReleaseWith(updateClient(8 * time.Second))
+	if err == nil {
+		return rel, envInsecure, nil
+	}
+	if !isCertificateError(err) || envInsecure {
+		return rel, envInsecure, err
+	}
+
+	log.Print("сертификат GitHub не прошёл проверку — повторяем с обходом TLS")
+	rel, err = fetchLatestReleaseWith(updateClientMode(8*time.Second, true))
+	if err != nil {
+		return rel, false, err
+	}
+	return rel, true, nil
+}
+
 func maybeUpdate() {
 	if os.Getenv("NO_UPDATE") == "1" {
 		return
@@ -306,7 +337,7 @@ func maybeUpdate() {
 		return
 	}
 
-	rel, err := fetchLatestRelease()
+	rel, insecureTLS, err := fetchLatestRelease()
 	if err != nil {
 		log.Printf("проверка обновлений пропущена: %v", err)
 		if strings.Contains(strings.ToLower(err.Error()), "certificate") {
@@ -339,7 +370,7 @@ func maybeUpdate() {
 	updatePath := filepath.Join(dir, "helios7-update.exe")
 	installPath := filepath.Join(dir, "helios7-install.exe")
 
-	client := updateClient(40 * time.Second)
+	client := updateClientMode(40*time.Second, insecureTLS)
 	res, err := client.Get(assetURL)
 	if err != nil {
 		log.Printf("скачивание обновления не удалось: %v", err)
