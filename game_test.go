@@ -292,6 +292,23 @@ func TestHelpExplainsEveryCommand(t *testing.T) {
 	}
 }
 
+func TestGadgetCommand(t *testing.T) {
+	s := NewSession()
+
+	res := s.Execute("gadget")
+	if res.State.HP != 3 {
+		t.Fatalf("gadget не должен снимать HP: %d", res.State.HP)
+	}
+	if !strings.HasPrefix(res.Output, "Выдан гаджет: ") || len(res.Output) <= len("Выдан гаджет: ") {
+		t.Fatalf("gadget вернул %q", res.Output)
+	}
+	for _, want := range []string{"гаджет", "gadget"} {
+		if !strings.Contains(s.Execute("help").Output, want) {
+			t.Fatalf("в help нет упоминания о %q", want)
+		}
+	}
+}
+
 func TestLsOrderIsStable(t *testing.T) {
 	s := NewSession()
 	first := s.Execute("ls /station").Output

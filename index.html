@@ -444,6 +444,31 @@
 
   .reset:disabled { opacity: .5; cursor: wait; }
 
+  .cadet-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: .68rem;
+    letter-spacing: .16em;
+    color: var(--muted);
+  }
+
+  .cadet-row input {
+    flex: 1;
+    min-width: 0;
+    padding: 7px 10px;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: rgba(8, 17, 15, .8);
+    color: #e6fff3;
+    font: inherit;
+    font-size: .76rem;
+    letter-spacing: normal;
+    outline: 0;
+  }
+
+  .cadet-row input:focus { border-color: var(--line-bright); }
+
   .arcade-launch {
     align-self: flex-start;
     padding: 10px 16px;
@@ -464,7 +489,8 @@
   }
 
   .arcade-overlay,
-  .victory-overlay {
+  .victory-overlay,
+  .defeat-overlay {
     position: fixed;
     inset: 0;
     z-index: 30;
@@ -479,10 +505,12 @@
   }
 
   .arcade-overlay.visible,
-  .victory-overlay.visible { opacity: 1; }
+  .victory-overlay.visible,
+  .defeat-overlay.visible { opacity: 1; }
 
   .arcade-overlay[hidden],
   .victory-overlay[hidden],
+  .defeat-overlay[hidden],
   .arcade-launch[hidden] { display: none; }
 
   .arcade-panel {
@@ -533,6 +561,7 @@
   .arcade-stats {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 12px;
     margin-top: 10px;
     font-size: .74rem;
@@ -555,6 +584,23 @@
 
   .arcade-stats button:hover,
   .victory-card button:hover { border-color: var(--amber); color: #ffd77a; }
+
+  .reload-bar {
+    width: 84px;
+    height: 6px;
+    border: 1px solid #2a473d;
+    border-radius: 3px;
+    overflow: hidden;
+    background: #0a1512;
+  }
+
+  .reload-bar i {
+    display: block;
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--green-dim), var(--amber));
+    transition: width .1s linear;
+  }
 
   .victory-card {
     text-align: center;
@@ -583,6 +629,28 @@
     to   { opacity: 1; transform: scale(1); }
   }
 
+  .defeat-card h2 {
+    color: #ffcf6b;
+    text-shadow: 0 0 24px rgba(255, 160, 60, .5);
+  }
+
+  .defeat-emoji {
+    margin-bottom: 10px;
+    font-size: clamp(3rem, 10vw, 6rem);
+    line-height: 1;
+    filter: drop-shadow(0 0 20px rgba(255, 160, 60, .45));
+  }
+
+  .defeat-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 22px;
+  }
+
+  .defeat-buttons button { margin-top: 0; }
+
   @media (max-width: 620px) {
     .app { width: min(100% - 20px, 1000px); padding-top: 14px; }
     .prompt { display: none; }
@@ -597,7 +665,8 @@
     .nebula,
     .stars,
     .arcade-launch,
-    .victory-card { animation: none !important; }
+    .victory-card,
+    .defeat-card { animation: none !important; }
   }
 </style>
 </head>
@@ -616,7 +685,7 @@
       <span class="sigil" aria-hidden="true">◈</span>
       <div>
         <h1>ГЕЛИОС-7</h1>
-        <p>терминал восстановления связи · v1.2.1</p>
+        <p>терминал восстановления связи · v1.3.0</p>
       </div>
     </div>
     <div class="boss">
@@ -645,6 +714,12 @@
 
   <button class="arcade-launch" id="arcade-btn" type="button" hidden>▶ Мини-игра: защити канал</button>
 
+  <div class="cadet-row">
+    <label for="cadet-name">ИМЯ КАДЕТА</label>
+    <input id="cadet-name" type="text" maxlength="24" value="Кадет"
+           autocomplete="off" spellcheck="false" placeholder="как тебя зовут?">
+  </div>
+
   <form class="command" id="form" autocomplete="off">
     <label class="prompt" id="prompt" for="input">cadet@helio-7:/$</label>
     <input id="input" name="command" type="text" spellcheck="false" maxlength="200"
@@ -662,11 +737,14 @@
     </div>
     <p class="arcade-tip">
       ← → или A/D — движение кораблика · Пробел или клик — стрельба ·
-      сбивай метеориты, береги 3 сердца
+      R — перезарядка · сбивай метеориты, береги 3 сердца
     </p>
     <canvas id="arcade-canvas" width="720" height="420" aria-label="Мини-игра: защита канала"></canvas>
     <div class="arcade-stats">
       <span id="arcade-kills">Сбито: 0 / 10</span>
+      <span id="arcade-ammo">Патроны: 6 / 6</span>
+      <span class="reload-bar" id="arcade-reload-bar" aria-hidden="true"><i></i></span>
+      <button id="arcade-reload" type="button">Перезарядка (R)</button>
       <span id="arcade-lives">♥ ♥ ♥</span>
       <button id="arcade-restart" type="button">Заново</button>
     </div>
@@ -678,6 +756,19 @@
     <h2>ТЫ ПОБЕДИЛ</h2>
     <p id="victory-detail">Связь восстановлена, канал защищён.</p>
     <button id="victory-restart" type="button">Сыграть ещё раз</button>
+  </div>
+</div>
+
+<div class="defeat-overlay" id="defeat-overlay" hidden>
+  <div class="victory-card defeat-card">
+    <div class="defeat-emoji" aria-hidden="true">👎</div>
+    <h2>ТЫ ПРОИГРАЛ</h2>
+    <p id="defeat-detail"></p>
+    <div class="defeat-buttons">
+      <button id="defeat-retry" type="button">Ещё раз</button>
+      <button id="defeat-reset" type="button">Сбросить миссию</button>
+      <button id="defeat-close" type="button">Закрыть сайт</button>
+    </div>
   </div>
 </div>
 
@@ -700,11 +791,20 @@
   const arcadeRestart = document.getElementById("arcade-restart");
   const arcadeKills = document.getElementById("arcade-kills");
   const arcadeLives = document.getElementById("arcade-lives");
+  const arcadeAmmo = document.getElementById("arcade-ammo");
+  const arcadeReloadBar = document.getElementById("arcade-reload-bar").firstElementChild;
+  const arcadeReloadBtn = document.getElementById("arcade-reload");
   const canvas = document.getElementById("arcade-canvas");
   const ctx = canvas.getContext("2d");
   const victoryOverlay = document.getElementById("victory-overlay");
   const victoryDetail = document.getElementById("victory-detail");
   const victoryRestart = document.getElementById("victory-restart");
+  const defeatOverlay = document.getElementById("defeat-overlay");
+  const defeatDetail = document.getElementById("defeat-detail");
+  const defeatRetry = document.getElementById("defeat-retry");
+  const defeatReset = document.getElementById("defeat-reset");
+  const defeatClose = document.getElementById("defeat-close");
+  const cadetName = document.getElementById("cadet-name");
 
   const BANNER = [
     "╔════════════════════════════════════════════╗",
@@ -712,11 +812,9 @@
     "╚════════════════════════════════════════════╝",
     "",
     "Связь со станцией потеряна. На канале — 3 HP помех.",
-    "Выполни три задачи, чтобы восстановить передатчик.",
     "",
     "Доступные команды: pwd, ls, cd, cat, grep, help, clear",
     "Набери help, чтобы узнать, как работает каждая команда.",
-    "После миссии откроется мини-игра: защити канал.",
     ""
   ].join("\n");
 
@@ -740,6 +838,7 @@
     "  grep СЛОВО ФАЙЛ     Ищет строки со словом. Пример: grep READY /station/events.log",
     "  clear               Очищает экран, миссия продолжается.",
     "  help, ?             Показывает эту справку.",
+    "  gadget              Выдаёт случайный гаджет.",
     "",
     "КАК ПРОЙТИ МИССИЮ",
     "  1. Посмотри, что лежит в /station:  ls /station",
@@ -750,8 +849,8 @@
     "Кнопка «Начать заново» очищает экран и сбрасывает прогресс.",
     "",
     "После победы автоматически запускается мини-игра «Защита канала»:",
-    "кораблик стреляет по метеоритам. Сбивай метеориты, береги 3 сердца —",
-    "и увидишь финальную надпись."
+    "10 метеоритов и 5 кораблей пришельцев. Корабли стреляют красным лучом.",
+    "R — перезарядка. В финале появятся имя кадета и найденный гаджет."
   ].join("\n");
 
   // При открытии через file:// сервер недоступен, поэтому включается
@@ -962,6 +1061,10 @@ auto_restart = false`
         return HELP_TEXT;
       }
 
+      if (cmd === "gadget") {
+        return "Выдан гаджет: " + randomGadget();
+      }
+
       return "команда не найдена: " + cmd + "\nДоступные команды: pwd, ls, cd, cat, grep, help, clear";
     }
 
@@ -978,15 +1081,35 @@ auto_restart = false`
     };
   }
 
+  // Генератор гаджетов: случайный трофей показывается в финальной надписи.
+  // Та же команда доступна в терминале (и в бэкенде, и в офлайн-режиме).
+  const GADGETS = [
+    "плазменный гайковёрт", "звёздный компас", "квантовый термос",
+    "лазерная отвёртка", "солнечная батарейка", "гипер-фонарик",
+    "антенна-бабочка", "магнитный крюк", "метеоритный брелок",
+    "реактивный рюкзак", "навигатор «Сириус»", "энерго-батончик"
+  ];
+
+  function randomGadget() {
+    return GADGETS[Math.floor(Math.random() * GADGETS.length)];
+  }
+
+  function cadetLabel() {
+    return (cadetName.value || "").trim() || "Кадет";
+  }
+
   // ── Мини-игра «Защита канала» ─────────────────────────────────────────
   // Полностью на клиенте: одинаково работает через HTTP, из file:// и в exe.
-  const ARCADE_TARGET = 10;
+  const METEOR_GOAL = 10;
+  const SHIP_GOAL = 5;
+  const ARCADE_TARGET = METEOR_GOAL + SHIP_GOAL;
   const ARCADE_W = canvas.width;
   const ARCADE_H = canvas.height;
   const arcadeKeys = { left: false, right: false, fire: false };
   let arcade = null;
   let arcadeAutoTimer = null;
   let arcadeHideTimer = null;
+  let arcadeFinishTimer = null;
 
   const arcadeStars = Array.from({ length: 70 }, (_, i) => ({
     x: (i * 137.51) % ARCADE_W,
@@ -995,15 +1118,48 @@ auto_restart = false`
     a: 0.2 + (i % 5) * 0.12
   }));
 
+  const ARCADE_MAGAZINE = 6;
+  const ARCADE_RELOAD_TIME = 1.4;
+
+  function arcadeUpdateAmmo() {
+    if (!arcade) return;
+    if (arcade.reloading) {
+      const pct = Math.round((1 - arcade.reloadTimer / ARCADE_RELOAD_TIME) * 100);
+      arcadeAmmo.textContent = "Перезарядка… " + pct + "%";
+      arcadeReloadBar.style.width = pct + "%";
+    } else {
+      arcadeAmmo.textContent = "Патроны: " + arcade.ammo + " / " + ARCADE_MAGAZINE;
+      arcadeReloadBar.style.width = (arcade.ammo / ARCADE_MAGAZINE * 100) + "%";
+    }
+  }
+
+  function arcadeUpdateKills() {
+    if (!arcade) return;
+    arcadeKills.textContent =
+      "Враги: " + (arcade.meteorsKilled + arcade.shipsKilled) + " / " + ARCADE_TARGET +
+      " · метеоры " + arcade.meteorsKilled + "/" + METEOR_GOAL +
+      " · корабли " + arcade.shipsKilled + "/" + SHIP_GOAL;
+  }
+
+  function arcadeStartReload() {
+    if (!arcade || arcade.over || arcade.reloading || arcade.ammo >= ARCADE_MAGAZINE) return;
+    arcade.reloading = true;
+    arcade.reloadTimer = ARCADE_RELOAD_TIME;
+    arcadeUpdateAmmo();
+  }
+
   function arcadeReset() {
     arcade = {
       ship: { x: ARCADE_W / 2, y: ARCADE_H - 44 },
-      bullets: [], meteors: [], particles: [],
-      kills: 0, lives: 3, spawn: 0.6, cooldown: 0,
+      bullets: [], enemyBullets: [], meteors: [], aliens: [], particles: [],
+      kills: 0, meteorsKilled: 0, shipsKilled: 0,
+      lives: 3, spawn: 0.6, alienTimer: 1.6, cooldown: 0,
+      ammo: 6, reloading: false, reloadTimer: 0,
       last: 0, raf: 0, over: false
     };
-    arcadeKills.textContent = "Сбито: 0 / " + ARCADE_TARGET;
+    arcadeUpdateKills();
     arcadeLives.textContent = "♥ ♥ ♥";
+    arcadeUpdateAmmo();
   }
 
   function arcadeSpawnMeteor() {
@@ -1020,14 +1176,41 @@ auto_restart = false`
     });
   }
 
+  function arcadeSpawnAlien() {
+    arcade.aliens.push({
+      x: 70 + Math.random() * (ARCADE_W - 140),
+      y: 52 + Math.random() * 78,
+      hp: 1,
+      drift: (Math.random() < 0.5 ? -1 : 1) * (18 + Math.random() * 22),
+      fire: 2.0 + Math.random() * 1.2,
+      phase: Math.random() * 6,
+      dead: false
+    });
+  }
+
+  function arcadeAlienFire(alien) {
+    const dx = arcade.ship.x - alien.x;
+    const dy = arcade.ship.y - alien.y;
+    const base = Math.atan2(dy, dx) + (Math.random() - 0.5) * 0.5;
+    arcade.enemyBullets.push({
+      x: alien.x, y: alien.y + 12,
+      vx: Math.cos(base) * 170, vy: Math.sin(base) * 170,
+      life: 3,
+      trail: [{ x: alien.x, y: alien.y + 12 }]
+    });
+  }
+
   function arcadeFire() {
-    if (!arcade || arcade.over) return;
-    // Выбираем самый опасный метеорит — тот, что ближе к нижнему краю.
-    let target = null;
-    let bestY = -Infinity;
-    for (const m of arcade.meteors) {
-      if (m.y < 0) continue;
-      if (m.y > bestY) { bestY = m.y; target = m; }
+    if (!arcade || arcade.over || arcade.reloading || arcade.ammo <= 0) return;
+    // Сначала сбиваем инопланетные корабли (они стреляют в ответ),
+    // потом берём самый опасный метеорит.
+    let target = arcade.aliens.find(a => !a.dead) || null;
+    if (!target) {
+      let bestY = -Infinity;
+      for (const m of arcade.meteors) {
+        if (m.y < 0) continue;
+        if (m.y > bestY) { bestY = m.y; target = m; }
+      }
     }
     let dx = 0;
     let dy = -1;
@@ -1035,16 +1218,23 @@ auto_restart = false`
       // Стреляем с упреждением: метеорит успевает сдвинуться за время полёта.
       const dist = Math.hypot(target.x - arcade.ship.x, target.y - arcade.ship.y) || 1;
       const flight = dist / 520;
-      const tx = target.x + target.drift * flight;
-      const ty = target.y + target.speed * flight;
+      // У метеоритов есть скорость падения, у кораблей — только дрейф.
+      const isMeteor = target.speed !== undefined;
+      const tx = target.x + (isMeteor ? target.drift * flight : 0);
+      const ty = target.y + (isMeteor ? target.speed * flight : 0);
       const len = Math.hypot(tx - arcade.ship.x, ty - arcade.ship.y) || 1;
       dx = (tx - arcade.ship.x) / len;
       dy = (ty - arcade.ship.y) / len;
     }
     arcade.bullets.push({
       x: arcade.ship.x, y: arcade.ship.y - 18,
-      vx: dx * 520, vy: dy * 520, life: 1.5
+      vx: dx * 520, vy: dy * 520, life: 1.5,
+      target: target,
+      trail: [{ x: arcade.ship.x, y: arcade.ship.y - 18 }]
     });
+    arcade.ammo--;
+    if (arcade.ammo <= 0) arcadeStartReload();
+    arcadeUpdateAmmo();
   }
 
   function arcadeHit() {
@@ -1053,34 +1243,114 @@ auto_restart = false`
     arcadeLives.textContent = "♥ ".repeat(Math.max(0, g.lives)).trim() || "—";
     if (g.lives <= 0) {
       g.over = true;
-      arcadeKills.textContent = "Кораблик повреждён — нажми «Заново».";
+      arcadeKills.textContent = "Кораблик повреждён";
+      arcadeLose();
     }
+  }
+
+  function segmentHitsCircle(x1, y1, x2, y2, cx, cy, r) {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const len2 = dx * dx + dy * dy;
+    let t = len2 ? ((cx - x1) * dx + (cy - y1) * dy) / len2 : 0;
+    t = Math.max(0, Math.min(1, t));
+    return Math.hypot(cx - (x1 + t * dx), cy - (y1 + t * dy)) <= r;
   }
 
   function arcadeStep(dt) {
     const g = arcade;
     if (!g || g.over) return;
 
+    if (g.reloading) {
+      g.reloadTimer -= dt;
+      if (g.reloadTimer <= 0) {
+        g.reloading = false;
+        g.reloadTimer = 0;
+        g.ammo = ARCADE_MAGAZINE;
+      }
+      arcadeUpdateAmmo();
+    }
+
     const dir = Number(arcadeKeys.right) - Number(arcadeKeys.left);
     g.ship.x = Math.max(24, Math.min(ARCADE_W - 24, g.ship.x + dir * 280 * dt));
 
     g.cooldown -= dt;
-    if (arcadeKeys.fire && g.cooldown <= 0) {
+    if (arcadeKeys.fire && !g.reloading && g.ammo > 0 && g.cooldown <= 0) {
       arcadeFire();
-      g.cooldown = 0.12;
+      g.cooldown = 0.13;
     }
 
     g.spawn -= dt;
     if (g.spawn <= 0) {
-      arcadeSpawnMeteor();
+      if (g.meteorsKilled < METEOR_GOAL && g.meteors.length < 3) arcadeSpawnMeteor();
       g.spawn = Math.max(0.5, 0.9 - g.kills * 0.02);
     }
 
+    g.alienTimer -= dt;
+    if (g.alienTimer <= 0) {
+      if (g.shipsKilled < SHIP_GOAL && g.aliens.length < 1) arcadeSpawnAlien();
+      g.alienTimer = 3.4;
+    }
+
+    for (const a of g.aliens) {
+      a.phase += dt;
+      a.x += a.drift * dt;
+      if (a.x < 40 || a.x > ARCADE_W - 40) {
+        a.drift *= -1;
+        a.x = Math.max(40, Math.min(ARCADE_W - 40, a.x));
+      }
+      a.fire -= dt;
+      if (a.fire <= 0 && !a.dead) {
+        arcadeAlienFire(a);
+        a.fire = 3.6 + Math.random() * 0.9;
+      }
+    }
+
     for (const b of g.bullets) {
-      b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt;
+      const px = b.x;
+      const py = b.y;
+
+      // Самонаведение: пуля разворачивается к цели, поэтому летит
+      // по видимой траектории и не уходит «не туда».
+      if (b.target && !b.target.dead) {
+        const desired = Math.atan2(b.target.y - b.y, b.target.x - b.x);
+        const current = Math.atan2(b.vy, b.vx);
+        let diff = desired - current;
+        while (diff > Math.PI) diff -= 2 * Math.PI;
+        while (diff < -Math.PI) diff += 2 * Math.PI;
+        const turn = Math.max(-7 * dt, Math.min(7 * dt, diff));
+        const speed = Math.hypot(b.vx, b.vy);
+        b.vx = Math.cos(current + turn) * speed;
+        b.vy = Math.sin(current + turn) * speed;
+      }
+
+      b.x += b.vx * dt;
+      b.y += b.vy * dt;
+      b.life -= dt;
+      b.prevX = px;
+      b.prevY = py;
+      b.trail.push({ x: b.x, y: b.y });
+      if (b.trail.length > 10) b.trail.shift();
     }
     g.bullets = g.bullets.filter(b =>
       b.life > 0 && b.x > -20 && b.x < ARCADE_W + 20 && b.y > -20 && b.y < ARCADE_H + 20);
+
+    // Красные лучи инопланетян летят по прямой и отнимают сердце при попадании.
+    for (const eb of g.enemyBullets) {
+      const px = eb.x;
+      const py = eb.y;
+      eb.x += eb.vx * dt;
+      eb.y += eb.vy * dt;
+      eb.life -= dt;
+      eb.trail.push({ x: eb.x, y: eb.y });
+      if (eb.trail.length > 8) eb.trail.shift();
+      if (segmentHitsCircle(px, py, eb.x, eb.y, g.ship.x, g.ship.y, 11)) {
+        eb.dead = true;
+        arcadeHit();
+      }
+    }
+    g.enemyBullets = g.enemyBullets.filter(b =>
+      !b.dead && b.life > 0 && b.x > -30 && b.x < ARCADE_W + 30 && b.y > -30 && b.y < ARCADE_H + 30);
 
     for (const m of g.meteors) {
       m.y += m.speed * dt;
@@ -1088,12 +1358,13 @@ auto_restart = false`
       m.tilt += m.spin * dt;
       if (m.x < m.r) { m.x = m.r; m.drift *= -1; }
       if (m.x > ARCADE_W - m.r) { m.x = ARCADE_W - m.r; m.drift *= -1; }
-      if (Math.hypot(m.x - g.ship.x, m.y - g.ship.y) < m.r + 12) {
+      if (Math.hypot(m.x - g.ship.x, m.y - g.ship.y) < m.r + 8) {
         m.dead = true;
         arcadeHit();
       } else if (m.y - m.r > ARCADE_H) {
+        // Улетевший метеорит просто исчезает: сердца тратятся только
+        // при прямом попадании или красном луче пришельцев.
         m.dead = true;
-        arcadeHit();
       }
     }
 
@@ -1101,10 +1372,14 @@ auto_restart = false`
       if (b.dead) continue;
       for (const m of g.meteors) {
         if (m.dead) continue;
-        if (Math.hypot(m.x - b.x, m.y - b.y) < m.r + 8) {
+        if (segmentHitsCircle(
+              b.prevX === undefined ? b.x : b.prevX,
+              b.prevY === undefined ? b.y : b.prevY,
+              b.x, b.y, m.x, m.y, m.r + 7)) {
           m.dead = true;
           b.dead = true;
           g.kills++;
+          g.meteorsKilled++;
           for (let i = 0; i < 8; i++) {
             const a = Math.random() * Math.PI * 2;
             g.particles.push({
@@ -1114,20 +1389,51 @@ auto_restart = false`
               life: 0.5 + Math.random() * 0.3, max: 0.8
             });
           }
-          arcadeKills.textContent = "Сбито: " + g.kills + " / " + ARCADE_TARGET;
+          arcadeUpdateKills();
+          break;
+        }
+      }
+    }
+
+    // Попадание по кораблю инопланетян: два выстрела, потом взрыв.
+    for (const b of g.bullets) {
+      if (b.dead) continue;
+      for (const a of g.aliens) {
+        if (a.dead) continue;
+        const bx = b.prevX === undefined ? b.x : b.prevX;
+        const by = b.prevY === undefined ? b.y : b.prevY;
+            if (segmentHitsCircle(bx, by, b.x, b.y, a.x, a.y, 24)) {
+          a.hp--;
+          b.dead = true;
+          for (let i = 0; i < 10; i++) {
+            const ang = Math.random() * Math.PI * 2;
+            g.particles.push({
+              x: a.x, y: a.y,
+              vx: Math.cos(ang) * (50 + Math.random() * 120),
+              vy: Math.sin(ang) * (50 + Math.random() * 120),
+              life: 0.5 + Math.random() * 0.4, max: 0.9
+            });
+          }
+          if (a.hp <= 0) {
+            a.dead = true;
+            g.kills++;
+            g.shipsKilled++;
+          }
+          arcadeUpdateKills();
           break;
         }
       }
     }
 
     g.meteors = g.meteors.filter(m => !m.dead);
+    g.aliens = g.aliens.filter(a => !a.dead);
     g.bullets = g.bullets.filter(b => !b.dead);
     for (const p of g.particles) {
       p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt;
     }
     g.particles = g.particles.filter(p => p.life > 0);
 
-    if (!g.over && g.kills >= ARCADE_TARGET) arcadeWin();
+    if (!g.over && g.meteorsKilled >= METEOR_GOAL && g.shipsKilled >= SHIP_GOAL) arcadeWin();
   }
 
   function arcadeDraw() {
@@ -1169,15 +1475,63 @@ auto_restart = false`
       ctx.restore();
     }
 
-    ctx.strokeStyle = "#6ef2a4";
+    for (const a of g.aliens) {
+      const bob = Math.sin(a.phase * 3) * 3;
+      ctx.save();
+      ctx.translate(a.x, a.y + bob);
+      ctx.shadowColor = "#ff5c5c";
+      ctx.shadowBlur = 14;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 19, 9, 0, 0, Math.PI * 2);
+      ctx.fillStyle = a.hp === 2 ? "#6d2b2b" : "#8a3a2f";
+      ctx.fill();
+      ctx.strokeStyle = "#ff7a6a";
+      ctx.lineWidth = 1.4;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.ellipse(0, -4, 9, 5, 0, Math.PI, 0);
+      ctx.stroke();
+      ctx.fillStyle = "#ffd0c0";
+      ctx.fillRect(-8, 1, 4, 3);
+      ctx.fillRect(4, 1, 4, 3);
+      ctx.restore();
+    }
+    ctx.shadowBlur = 0;
+
+    ctx.strokeStyle = "rgba(110,242,164,.75)";
     ctx.lineWidth = 2;
     ctx.shadowColor = "#6ef2a4";
-    ctx.shadowBlur = 8;
+    ctx.shadowBlur = 10;
     for (const b of g.bullets) {
+      if (b.trail.length > 1) {
+        ctx.beginPath();
+        ctx.moveTo(b.trail[0].x, b.trail[0].y);
+        for (let i = 1; i < b.trail.length; i++) ctx.lineTo(b.trail[i].x, b.trail[i].y);
+        ctx.stroke();
+      }
       ctx.beginPath();
-      ctx.moveTo(b.x, b.y);
-      ctx.lineTo(b.x - b.vx * 0.018, b.y - b.vy * 0.018);
-      ctx.stroke();
+      ctx.arc(b.x, b.y, 3, 0, Math.PI * 2);
+      ctx.fillStyle = "#eafff4";
+      ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+
+    // Красные лучи хорошо видны на фоне и отличаются от наших зелёных.
+    ctx.strokeStyle = "rgba(255,90,80,.95)";
+    ctx.lineWidth = 2.5;
+    ctx.shadowColor = "#ff4a3a";
+    ctx.shadowBlur = 12;
+    for (const eb of g.enemyBullets) {
+      if (eb.trail.length > 1) {
+        ctx.beginPath();
+        ctx.moveTo(eb.trail[0].x, eb.trail[0].y);
+        for (let i = 1; i < eb.trail.length; i++) ctx.lineTo(eb.trail[i].x, eb.trail[i].y);
+        ctx.stroke();
+      }
+      ctx.beginPath();
+      ctx.arc(eb.x, eb.y, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = "#ffd0c0";
+      ctx.fill();
     }
     ctx.shadowBlur = 0;
 
@@ -1241,19 +1595,33 @@ auto_restart = false`
     arcade.over = true;
     if (arcade.raf) cancelAnimationFrame(arcade.raf);
     arcadeOverlay.classList.remove("visible");
-    victoryDetail.textContent =
-      "Связь восстановлена, " + arcade.kills + " метеоритов сбито. Канал защищён.";
-    setTimeout(() => {
+    victoryDetail.textContent = cadetLabel() + " победил! Сбито " + METEOR_GOAL +
+      " метеоритов и " + SHIP_GOAL + " кораблей. Найден гаджет: «" + randomGadget() + "».";
+    arcadeFinishTimer = setTimeout(() => {
       arcadeOverlay.hidden = true;
       victoryOverlay.hidden = false;
       requestAnimationFrame(() => victoryOverlay.classList.add("visible"));
     }, 650);
   }
 
+  function arcadeLose() {
+    if (!arcade) return;
+    if (arcade.raf) cancelAnimationFrame(arcade.raf);
+    arcadeOverlay.classList.remove("visible");
+    defeatDetail.textContent = cadetLabel() + " проиграл. Канал пробит метеоритами. " +
+      "Гаджет: «" + randomGadget() + "».";
+    arcadeFinishTimer = setTimeout(() => {
+      arcadeOverlay.hidden = true;
+      defeatOverlay.hidden = false;
+      requestAnimationFrame(() => defeatOverlay.classList.add("visible"));
+    }, 650);
+  }
+
   function openArcade() {
     if (arcadeAutoTimer) { clearTimeout(arcadeAutoTimer); arcadeAutoTimer = null; }
     if (arcadeHideTimer) { clearTimeout(arcadeHideTimer); arcadeHideTimer = null; }
-    if (!victoryOverlay.hidden) return;
+    if (arcadeFinishTimer) { clearTimeout(arcadeFinishTimer); arcadeFinishTimer = null; }
+    if (!victoryOverlay.hidden || !defeatOverlay.hidden) return;
 
     arcadeReset();
     arcadeOverlay.hidden = false;
@@ -1263,6 +1631,7 @@ auto_restart = false`
   }
 
   function closeArcade() {
+    if (arcadeFinishTimer) { clearTimeout(arcadeFinishTimer); arcadeFinishTimer = null; }
     if (arcade && arcade.raf) cancelAnimationFrame(arcade.raf);
     arcade = null;
     arcadeKeys.left = arcadeKeys.right = arcadeKeys.fire = false;
@@ -1277,6 +1646,11 @@ auto_restart = false`
     setTimeout(() => { victoryOverlay.hidden = true; }, 650);
   }
 
+  function hideDefeat() {
+    defeatOverlay.classList.remove("visible");
+    setTimeout(() => { defeatOverlay.hidden = true; }, 650);
+  }
+
   function canvasPointerX(event) {
     const rect = canvas.getBoundingClientRect();
     return Math.max(24, Math.min(ARCADE_W - 24, (event.clientX - rect.left) / rect.width * ARCADE_W));
@@ -1284,6 +1658,7 @@ auto_restart = false`
 
   arcadeBtn.addEventListener("click", openArcade);
   arcadeClose.addEventListener("click", closeArcade);
+  arcadeReloadBtn.addEventListener("click", arcadeStartReload);
 
   arcadeRestart.addEventListener("click", () => {
     if (!arcade) return;
@@ -1298,6 +1673,24 @@ auto_restart = false`
     resetBtn.click();
   });
 
+  defeatRetry.addEventListener("click", () => {
+    defeatOverlay.classList.remove("visible");
+    defeatOverlay.hidden = true;
+    openArcade();
+  });
+
+  defeatReset.addEventListener("click", () => {
+    hideDefeat();
+    resetBtn.click();
+  });
+
+  defeatClose.addEventListener("click", () => {
+    window.close();
+    setTimeout(() => {
+      defeatDetail.textContent += " Браузер сам не закрылся — закрой вкладку вручную.";
+    }, 200);
+  });
+
   window.addEventListener("keydown", (event) => {
     if (arcadeOverlay.hidden || !arcade) return;
     const k = event.key;
@@ -1307,6 +1700,8 @@ auto_restart = false`
       arcadeKeys.right = true; event.preventDefault();
     } else if (k === " " || k === "Spacebar") {
       arcadeKeys.fire = true; event.preventDefault();
+    } else if (k === "r" || k === "R" || k === "к") {
+      arcadeStartReload(); event.preventDefault();
     }
   });
 
@@ -1519,6 +1914,7 @@ auto_restart = false`
     if (arcadeAutoTimer) { clearTimeout(arcadeAutoTimer); arcadeAutoTimer = null; }
     closeArcade();
     if (!victoryOverlay.hidden) hideVictory();
+    if (!defeatOverlay.hidden) hideDefeat();
 
     history = [];
     historyPos = 0;
