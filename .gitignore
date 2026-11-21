@@ -1,4 +1,8 @@
+# Бинарник от `go build` в корне проекта
+/Ob
 /station-mission
+
+# Артефакты тестов и редакторов
 *.test
 *.out
 .DS_Store

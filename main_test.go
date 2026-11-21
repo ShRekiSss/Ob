@@ -7,8 +7,10 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestHTTPMissionFlow(t *testing.T) {
@@ -120,6 +122,45 @@ func TestHTTPUnknownPath(t *testing.T) {
 
 	if res.StatusCode != http.StatusNotFound {
 		t.Fatalf("неизвестный путь вернул %d", res.StatusCode)
+	}
+}
+
+func TestStaleSessionsAreEvicted(t *testing.T) {
+	srv := newServer()
+	srv.ttl = time.Minute
+	now := time.Date(2026, 11, 21, 12, 0, 0, 0, time.UTC)
+	srv.now = func() time.Time { return now }
+
+	ts := httptest.NewServer(srv.handler())
+	defer ts.Close()
+	tsURL, err := url.Parse(ts.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	jarA, _ := cookiejar.New(nil)
+	jarB, _ := cookiejar.New(nil)
+	clientA := &http.Client{Jar: jarA}
+	clientB := &http.Client{Jar: jarB}
+
+	var state Snapshot
+	getJSON(t, clientA, ts.URL+"/api/state", &state)
+	getJSON(t, clientB, ts.URL+"/api/state", &state)
+
+	if got := len(srv.sessions); got != 2 {
+		t.Fatalf("активных сессий = %d, ожидалось 2", got)
+	}
+
+	oldID := jarA.Cookies(tsURL)[0].Value
+	now = now.Add(2 * srv.ttl)
+
+	getJSON(t, clientA, ts.URL+"/api/state", &state)
+
+	if got := len(srv.sessions); got != 1 {
+		t.Fatalf("после очистки сессий = %d, ожидалась 1", got)
+	}
+	if newID := jarA.Cookies(tsURL)[0].Value; newID == oldID {
+		t.Fatalf("просроченная сессия не заменена: %q", newID)
 	}
 }
 

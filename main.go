@@ -11,20 +11,37 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 )
 
 //go:embed index.html
 var assets embed.FS
 
-const sessionCookie = "station_sid"
+const (
+	sessionCookie = "station_sid"
+	sessionTTL    = 24 * time.Hour
+)
 
 type server struct {
 	mu       sync.Mutex
-	sessions map[string]*Session
+	sessions map[string]sessionEntry
+
+	// ttl и now вынесены в поля, чтобы тесты могли управлять временем.
+	ttl time.Duration
+	now func() time.Time
+}
+
+type sessionEntry struct {
+	sess *Session
+	seen time.Time
 }
 
 func newServer() *server {
-	return &server{sessions: make(map[string]*Session)}
+	return &server{
+		sessions: make(map[string]sessionEntry),
+		ttl:      sessionTTL,
+		now:      time.Now,
+	}
 }
 
 func (s *server) handler() http.Handler {
@@ -85,25 +102,43 @@ func (s *server) session(w http.ResponseWriter, r *http.Request) *Session {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	now := s.now()
+
 	if cookie, err := r.Cookie(sessionCookie); err == nil {
-		if sess, ok := s.sessions[cookie.Value]; ok {
-			return sess
+		if entry, ok := s.sessions[cookie.Value]; ok && now.Sub(entry.seen) < s.ttl {
+			entry.seen = now
+			s.sessions[cookie.Value] = entry
+			return entry.sess
 		}
+		delete(s.sessions, cookie.Value)
 	}
+
+	s.sweep(now)
 
 	id := randomID()
 	sess := NewSession()
-	s.sessions[id] = sess
+	s.sessions[id] = sessionEntry{sess: sess, seen: now}
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     sessionCookie,
 		Value:    id,
 		Path:     "/",
-		MaxAge:   24 * 60 * 60,
+		MaxAge:   int(s.ttl / time.Second),
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 	})
 	return sess
+}
+
+// sweep удаляет сессии, к которым не обращались дольше ttl.
+// Вызывается под s.mu при создании новой сессии, чтобы карта не росла
+// бесконечно от случайных или брошенных cookie.
+func (s *server) sweep(now time.Time) {
+	for id, entry := range s.sessions {
+		if now.Sub(entry.seen) >= s.ttl {
+			delete(s.sessions, id)
+		}
+	}
 }
 
 func randomID() string {
@@ -131,8 +166,12 @@ func main() {
 	}
 
 	srv := &http.Server{
-		Addr:    addr,
-		Handler: newServer().handler(),
+		Addr:              addr,
+		Handler:           newServer().handler(),
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       10 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		IdleTimeout:       60 * time.Second,
 	}
 
 	displayAddr := addr
