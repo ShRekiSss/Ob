@@ -274,6 +274,24 @@ func TestHintsUseRelativePathsInsideStation(t *testing.T) {
 	}
 }
 
+func TestHelpExplainsEveryCommand(t *testing.T) {
+	s := NewSession()
+
+	res := s.Execute("help")
+	if res.State.HP != 3 {
+		t.Fatalf("help не должен снимать HP: %d", res.State.HP)
+	}
+	for _, want := range []string{"pwd", "ls", "cd", "cat", "grep", "clear", "help", "/station/brief.txt", "READY"} {
+		if !strings.Contains(res.Output, want) {
+			t.Fatalf("в help нет %q:\n%s", want, res.Output)
+		}
+	}
+
+	if !strings.Contains(s.Execute("?").Output, "СПРАВКА") {
+		t.Fatal("псевдоним ? тоже должен показывать справку")
+	}
+}
+
 func TestLsOrderIsStable(t *testing.T) {
 	s := NewSession()
 	first := s.Execute("ls /station").Output

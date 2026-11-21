@@ -41,6 +41,33 @@ azimuth = 117
 elevation = 24
 auto_restart = false`
 
+const helpText = `СПРАВКА «ГЕЛИОС-7» — как работать с терминалом
+
+ПУТИ
+  Каталог — это «папка», файл — документ внутри неё. К корню ведёт /.
+  /                  корень виртуальной ФС
+  /station/brief.txt полный путь к файлу
+  brief.txt          путь относительно текущего каталога
+  .                  текущий каталог
+  ..                 на один уровень выше
+
+КОМАНДЫ
+  pwd                 Показывает, где ты сейчас. Пример: pwd
+  ls                  Показывает содержимое каталога. Примеры: ls, ls /station
+  cd                  Переходит в каталог. Примеры: cd /station, cd .., cd
+  cat ФАЙЛ            Читает файл целиком. Пример: cat /station/brief.txt
+  grep СЛОВО ФАЙЛ     Ищет строки со словом. Пример: grep READY /station/events.log
+  clear               Очищает экран, миссия продолжается.
+  help, ?             Показывает эту справку.
+
+КАК ПРОЙТИ МИССИЮ
+  1. Посмотри, что лежит в /station:  ls /station
+  2. Прочитай бортовой журнал:        cat /station/brief.txt
+  3. Найди маркер READY в журнале:    grep READY /station/events.log
+
+Подсказка под полем ввода всегда говорит, что делать сейчас.
+Кнопка «Начать заново» очищает экран и сбрасывает прогресс.`
+
 type fsNode struct {
 	dir  bool
 	data string
@@ -177,8 +204,10 @@ func (s *Session) run(line string) string {
 		return s.cat(args)
 	case "grep":
 		return s.grep(args)
+	case "help", "?":
+		return helpText
 	default:
-		return fmt.Sprintf("команда не найдена: %s\nДоступные команды: pwd, ls, cd, cat, grep", cmd)
+		return fmt.Sprintf("команда не найдена: %s\nДоступные команды: pwd, ls, cd, cat, grep, help, clear", cmd)
 	}
 }
 

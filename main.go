@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/rand"
 	"embed"
 	"encoding/hex"
@@ -11,9 +12,11 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"os/signal"
 	"runtime"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 )
 
@@ -23,7 +26,10 @@ var assets embed.FS
 const (
 	sessionCookie = "station_sid"
 	sessionTTL    = 24 * time.Hour
+	version       = "1.1.1"
 )
+
+var startedAt = time.Now()
 
 type server struct {
 	mu       sync.Mutex
@@ -51,9 +57,39 @@ func (s *server) handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /", s.handleIndex)
 	mux.HandleFunc("GET /api/state", s.handleState)
+	mux.HandleFunc("GET /api/health", s.handleHealth)
 	mux.HandleFunc("POST /api/command", s.handleCommand)
 	mux.HandleFunc("POST /api/reset", s.handleReset)
-	return mux
+	return s.logRequests(mux)
+}
+
+// logRequests пишет в консоль сервера строку на каждый запрос:
+// метод, путь, статус и время обработки — как в обычном серверном логе.
+func (s *server) logRequests(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		rec := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
+		next.ServeHTTP(rec, r)
+		log.Printf("%s %s → %d (%s)", r.Method, r.URL.Path, rec.status, time.Since(start).Round(time.Millisecond))
+	})
+}
+
+type statusRecorder struct {
+	http.ResponseWriter
+	status int
+}
+
+func (rec *statusRecorder) WriteHeader(status int) {
+	rec.status = status
+	rec.ResponseWriter.WriteHeader(status)
+}
+
+func (s *server) handleHealth(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, http.StatusOK, map[string]any{
+		"ok":      true,
+		"version": version,
+		"uptime":  time.Since(startedAt).Round(time.Second).String(),
+	})
 }
 
 func (s *server) handleIndex(w http.ResponseWriter, r *http.Request) {
@@ -184,7 +220,21 @@ func main() {
 		displayAddr = "localhost" + displayAddr
 	}
 	pageURL := "http://" + displayAddr
-	log.Printf("станция «Гелиос-7» на связи: %s", pageURL)
+	log.Printf("╔════════════════════════════════════════════╗")
+	log.Printf("║  ГЕЛИОС-7  //  сервер связи  //  v%s        ║", version)
+	log.Printf("╚════════════════════════════════════════════╝")
+	log.Printf("станция на связи: %s", pageURL)
+	log.Printf("проверка работоспособности: %s/api/health", pageURL)
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	go func() {
+		<-ctx.Done()
+		log.Print("завершение работы, закрываем соединения…")
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		_ = srv.Shutdown(shutdownCtx)
+	}()
 
 	// При двойном щелчке по exe на Windows сразу открываем браузер.
 	if runtime.GOOS == "windows" {

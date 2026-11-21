@@ -125,6 +125,22 @@ func TestHTTPUnknownPath(t *testing.T) {
 	}
 }
 
+func TestHTTPHealth(t *testing.T) {
+	srv := httptest.NewServer(newServer().handler())
+	defer srv.Close()
+
+	var body struct {
+		OK      bool   `json:"ok"`
+		Version string `json:"version"`
+		Uptime  string `json:"uptime"`
+	}
+	getJSON(t, &http.Client{}, srv.URL+"/api/health", &body)
+
+	if !body.OK || body.Version != version || body.Uptime == "" {
+		t.Fatalf("/api/health вернул %+v", body)
+	}
+}
+
 func TestStaleSessionsAreEvicted(t *testing.T) {
 	srv := newServer()
 	srv.ttl = time.Minute
