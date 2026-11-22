@@ -387,10 +387,11 @@ func maybeUpdate() {
 		log.Printf("не удалось сохранить обновление: %v", err)
 		return
 	}
-	_, copyErr := io.Copy(f, io.LimitReader(res.Body, 64<<20))
+	written, copyErr := io.Copy(f, io.LimitReader(res.Body, 64<<20))
 	closeErr := f.Close()
-	if copyErr != nil || closeErr != nil {
-		log.Printf("не удалось сохранить обновление: %v %v", copyErr, closeErr)
+	if copyErr != nil || closeErr != nil || written >= 64<<20 {
+		log.Printf("не удалось сохранить обновление: %v %v (байт: %d)", copyErr, closeErr, written)
+		_ = os.Remove(updatePath)
 		return
 	}
 
@@ -400,7 +401,8 @@ func maybeUpdate() {
 		_ = os.Remove(updatePath)
 		return
 	}
-	if err := os.WriteFile(installPath, data, 0755); err != nil {
+	if err := os.WriteFile(installPath, data, 0700); err != nil {
+		_ = os.Remove(updatePath)
 		log.Printf("не удалось подготовить установщик: %v", err)
 		return
 	}

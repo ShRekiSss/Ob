@@ -1075,7 +1075,9 @@ auto_restart = false`
 
       if (cmd === "name") {
         if (args.length === 0) return "Имя кадета: " + cadetName;
-        cadetName = args.join(" ").slice(0, 24);
+        // Режем по символам, а не по UTF-16-кодам: так эмодзи и кириллица
+        // не обрываются на середине. То же делает truncateRunes в game.go.
+        cadetName = Array.from(args.join(" ")).slice(0, 24).join("");
         return "Имя кадета: " + cadetName;
       }
 

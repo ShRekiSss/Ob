@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"unicode/utf8"
 )
 
 const maxHP = 3
@@ -228,17 +229,18 @@ func (s *Session) run(line string) string {
 		return s.grep(args)
 	case "help", "?":
 		return helpText
+	case "clear":
+		// Очистка экрана выполняется на клиенте. Сервер всё же принимает
+		// команду, чтобы API не отвечал «команда не найдена» на описанную
+		// в help команду.
+		return ""
 	case "gadget":
 		return "Выдан гаджет: " + randomGadget()
 	case "name":
 		if len(args) == 0 {
 			return "Имя кадета: " + s.cadetName
 		}
-		name := strings.Join(args, " ")
-		if len(name) > 24 {
-			name = name[:24]
-		}
-		s.cadetName = name
+		s.cadetName = truncateRunes(strings.Join(args, " "), 24)
 		return "Имя кадета: " + s.cadetName
 	default:
 		return fmt.Sprintf("команда не найдена: %s\nДоступные команды: pwd, ls, cd, cat, grep, help, clear", cmd)
@@ -376,6 +378,16 @@ func (s *Session) grep(args []string) string {
 	}
 
 	return strings.Join(matches, "\n")
+}
+
+// truncateRunes ограничивает строку счётчиком символов, а не байт.
+// Простой срез name[:24] разрывал бы многобайтовую кириллицу и эмодзи,
+// из-за чего JSON содержал бы некорректные последовательности UTF-8.
+func truncateRunes(s string, max int) string {
+	if utf8.RuneCountInString(s) <= max {
+		return s
+	}
+	return string([]rune(s)[:max])
 }
 
 func resolvePath(cwd, arg string) (string, error) {

@@ -12,6 +12,7 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"unicode/utf8"
 )
 
 func TestHTTPMissionFlow(t *testing.T) {
@@ -153,6 +154,35 @@ func TestVersionNewer(t *testing.T) {
 		if got := versionNewer(c.latest, c.current); got != c.want {
 			t.Errorf("versionNewer(%q, %q) = %v, хочется %v", c.latest, c.current, got, c.want)
 		}
+	}
+}
+
+func TestHTTPClearAndUnicodeName(t *testing.T) {
+	srv := httptest.NewServer(newServer().handler())
+	defer srv.Close()
+	// Cookie-jar обязателен: без него каждый запрос открывал бы новую сессию.
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	client := &http.Client{Jar: jar}
+
+	postJSON(t, client, srv.URL+"/api/command", map[string]string{"command": "ls /station"}, &Result{})
+
+	var cleared Result
+	postJSON(t, client, srv.URL+"/api/command", map[string]string{"command": "clear"}, &cleared)
+	if cleared.Output != "" || cleared.State.HP != 2 || cleared.State.Done != 1 {
+		t.Fatalf("clear через API изменил состояние: %+v", cleared)
+	}
+
+	var named Result
+	postJSON(t, client, srv.URL+"/api/command",
+		map[string]string{"command": "name " + strings.Repeat("Я", 30)}, &named)
+	if got := []rune(named.State.Name); len(got) != 24 {
+		t.Fatalf("имя через API обрезано до %d символов: %q", len(got), named.State.Name)
+	}
+	if !utf8.ValidString(named.State.Name) {
+		t.Fatalf("имя через API содержит битый UTF-8: %q", named.State.Name)
 	}
 }
 

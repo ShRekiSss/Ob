@@ -19,6 +19,15 @@ jobs:
           go-version-file: go.mod
           cache: true
 
+      - name: gofmt
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "Нужно выполнить gofmt -w:"
+            echo "$unformatted"
+            exit 1
+          fi
+
       - name: go vet
         run: go vet ./...
 
@@ -27,3 +36,6 @@ jobs:
 
       - name: go build
         run: go build ./...
+
+      - name: go build (windows/amd64)
+        run: GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -o /tmp/helios7.exe .

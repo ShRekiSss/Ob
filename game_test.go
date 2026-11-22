@@ -3,6 +3,7 @@ package main
 import (
 	"strings"
 	"testing"
+	"unicode/utf8"
 )
 
 func TestTerminalPaths(t *testing.T) {
@@ -335,5 +336,44 @@ func TestLsOrderIsStable(t *testing.T) {
 		if got := s.Execute("ls /station").Output; got != first {
 			t.Fatalf("порядок вывода ls нестабилен:\n%s\n---\n%s", first, got)
 		}
+	}
+}
+
+func TestNameTruncatesByRunes(t *testing.T) {
+	for _, input := range []string{strings.Repeat("Я", 30), strings.Repeat("🚀", 30)} {
+		s := NewSession()
+		res := s.Execute("name " + input)
+
+		if got := []rune(res.State.Name); len(got) != 24 {
+			t.Fatalf("имя обрезано до %d символов, ожидалось 24: %q", len(got), res.State.Name)
+		}
+		if !utf8.ValidString(res.State.Name) || strings.Contains(res.State.Name, "\uFFFD") {
+			t.Fatalf("имя содержит битый UTF-8: %q", res.State.Name)
+		}
+		if res.Output != "Имя кадета: "+res.State.Name {
+			t.Fatalf("output = %q, состояние = %+v", res.Output, res.State)
+		}
+	}
+}
+
+func TestClearCommandIsAcceptedByBackend(t *testing.T) {
+	s := NewSession()
+	s.Execute("ls /station")
+
+	res := s.Execute("clear")
+	if res.Output != "" {
+		t.Fatalf("clear не должен выводить текст, получено %q", res.Output)
+	}
+	if res.State.HP != 2 || res.State.Cwd != "/" || res.State.Done != 1 {
+		t.Fatalf("clear изменил состояние миссии: %+v", res.State)
+	}
+	if res := s.Execute("  CLEAR  "); !strings.Contains(res.Output, "команда не найдена") {
+		t.Fatalf("команды чувствительны к регистру: %q", res.Output)
+	}
+}
+
+func TestTruncateRunesShortInput(t *testing.T) {
+	if got := truncateRunes("Кадет", 24); got != "Кадет" {
+		t.Fatalf("короткое имя изменилось: %q", got)
 	}
 }
