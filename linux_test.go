@@ -9,6 +9,9 @@ func TestLinuxFullPlaythrough(t *testing.T) {
 	s := NewLinuxSession()
 
 	commands := [][]string{
+		{"ls /station"},
+		{"cat /station/brief.txt"},
+		{"grep READY /station/events.log"},
 		{"whoami", "id"},
 		{"ls -la /home/analyst", "cat /home/analyst/.notes"},
 		{`find /var/log -name "*.log"`},
@@ -31,7 +34,7 @@ func TestLinuxFullPlaythrough(t *testing.T) {
 		state := s.State()
 		want := i + 1
 		if state.Completed {
-			want = 10
+			want = len(linuxMissions)
 		}
 		if state.Done != want {
 			t.Fatalf("после задания %d: Done=%d, ожидалось %d (%s)", i+1, state.Done, want, state.Goal)
@@ -39,7 +42,7 @@ func TestLinuxFullPlaythrough(t *testing.T) {
 	}
 
 	state := s.State()
-	if !state.Completed || state.Score != 1000 {
+	if !state.Completed || state.Score != 1300 {
 		t.Fatalf("финал: %+v", state)
 	}
 	if got := s.fs["/srv/incident/config.yml"].Mode; got != "640" {
@@ -62,8 +65,7 @@ func TestLinuxScoreAndHint(t *testing.T) {
 	s := NewLinuxSession()
 	s.Execute("hint")
 	s.Execute("bogus-command")
-	s.Execute("whoami")
-	s.Execute("id")
+	s.Execute("ls /station")
 	state := s.State()
 	if state.Done != 1 || state.Score != 85 {
 		t.Fatalf("счёт после подсказки и ошибки: %+v", state)

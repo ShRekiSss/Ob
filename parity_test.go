@@ -94,7 +94,7 @@ func TestOfflineNameLimitMatchesServer(t *testing.T) {
 
 func TestOfflineLinuxTrainerMatchesServer(t *testing.T) {
 	page := pageHTML(t)
-	if !strings.Contains(page, "L_MISSIONS") || !strings.Contains(page, "ТРЕНАЖЁР LINUX") {
+	if !strings.Contains(page, "L_MISSIONS") || !strings.Contains(page, "ОТДЕЛ ИБ · РАССЛЕДОВАНИЕ") {
 		t.Fatal("в index.html нет офлайн-копии тренажёра Linux")
 	}
 	for _, m := range linuxMissions {

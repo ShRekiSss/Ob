@@ -31,7 +31,7 @@ var assets embed.FS
 const (
 	sessionCookie  = "station_sid"
 	sessionTTL     = 24 * time.Hour
-	version        = "1.5.0"
+	version        = "1.6.0"
 	latestRelease  = "https://api.github.com/repos/ShRekiSss/Ob/releases/latest"
 	applyUpdateArg = "--apply-update"
 )
@@ -500,7 +500,7 @@ func main() {
 	}
 	pageURL := "http://" + displayAddr
 	log.Printf("╔════════════════════════════════════════════╗")
-	log.Printf("║  ГЕЛИОС-7  //  сервер связи  //  v%s        ║", version)
+	log.Printf("║  ОТДЕЛ ИБ  //  расследование  //  v%s       ║", version)
 	log.Printf("╚════════════════════════════════════════════╝")
 	log.Printf("станция на связи: %s", pageURL)
 	log.Printf("проверка работоспособности: %s/api/health", pageURL)

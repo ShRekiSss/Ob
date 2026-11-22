@@ -700,13 +700,13 @@
     <div class="brand">
       <span class="sigil" aria-hidden="true">◈</span>
       <div>
-        <h1>ГЕЛИОС-7</h1>
-        <p>терминал восстановления связи · v1.5.0</p>
+        <h1>ОТДЕЛ ИБ</h1>
+        <p>расследование инцидента · v1.6.0</p>
       </div>
     </div>
     <div class="boss">
       <div class="boss-label">
-        <span>ПОМЕХИ НА КАНАЛЕ</span>
+        <span>ЗАДАНИЙ ВЫПОЛНЕНО</span>
         <span id="hp-text">3 / 3 HP</span>
       </div>
       <div class="hp-track" id="hp-track" role="img" aria-label="3 из 3 HP"></div>
@@ -729,7 +729,7 @@
   </section>
 
   <div class="linux-panel" id="linux-panel" hidden>
-    <div class="linux-head"><span>ТРЕНАЖЁР LINUX · 10 ЗАДАНИЙ · 10.02.05</span></div>
+    <div class="linux-head"><span>ОТДЕЛ ИБ · РАССЛЕДОВАНИЕ · 13 ЗАДАНИЙ · 10.02.05</span></div>
     <h3 id="linux-title"></h3>
     <p id="linux-brief"></p>
     <p class="linux-goal" id="linux-goal"></p>
@@ -737,7 +737,6 @@
   </div>
 
   <div class="mode-switch">
-    <button class="arcade-launch" id="linux-btn" type="button">▶ Тренажёр Linux (10 заданий)</button>
     <button class="arcade-launch" id="arcade-btn" type="button" hidden>▶ Мини-игра: защити канал</button>
   </div>
 
@@ -808,14 +807,13 @@
   const hpTrack = document.getElementById("hp-track");
   const hintEl = document.getElementById("hint");
   const hintBox = document.getElementById("hint-box");
-  const linuxBtn = document.getElementById("linux-btn");
   const linuxPanel = document.getElementById("linux-panel");
   const linuxTitle = document.getElementById("linux-title");
   const linuxBrief = document.getElementById("linux-brief");
   const linuxGoal = document.getElementById("linux-goal");
   const linuxProgress = document.getElementById("linux-progress");
   const linuxScore = document.getElementById("linux-score");
-  let linuxMode = false;
+  let linuxMode = true; // единый сюжет: только отдел ИБ, без аркады
   let linuxGame = null;
 
   // Помехи на линии: надпись «станция · канал» мигает, переключая 6 и 7.
@@ -852,13 +850,14 @@
 
   const BANNER = [
     "╔════════════════════════════════════════════╗",
-    "║   СИСТЕМА СВЯЗИ «ГЕЛИОС-7»  //  КАНАЛ 7    ║",
+    "║   ОТДЕЛ ИНФОРМАЦИОННОЙ БЕЗОПАСНОСТИ        ║",
+    "║   РАССЛЕДОВАНИЕ ИНЦИДЕНТА // 13 ЗАДАНИЙ   ║",
     "╚════════════════════════════════════════════╝",
     "",
-    "Связь со станцией потеряна. На канале — 3 HP помех.",
+    "Ты стажёр отдела ИБ. Разберись в инциденте от первой",
+    "команды до финального отчёта — всё в этом терминале.",
     "",
-    "Доступные команды: pwd, ls, cd, cat, grep, help, clear",
-    "Набери help, чтобы узнать, как работает каждая команда.",
+    "Набери help, чтобы увидеть команды. hint — подсказка.",
     ""
   ].join("\n");
 
@@ -1812,37 +1811,46 @@ auto_restart = false`
 
   // ── Тренажёр Linux для file:// (зеркало linux.go) ─────────────────────
   const L_MISSIONS = [
-    { title:"1. Кто я в системе", brief:"Узнай свою учётную запись и права.",
+    { title:"1. Брифинг отдела ИБ", brief:"Тебя приняли стажёром в отдел ИБ. Начни с каталога /station.",
+      goal:"ls /station", hint:"ls ПУТЬ показывает содержимое каталога.",
+      checks:[["ls","/station"]] },
+    { title:"2. Бортовой журнал", brief:"Прочитай описание инцидента целиком.",
+      goal:"cat /station/brief.txt", hint:"cat ФАЙЛ выводит содержимое файла.",
+      checks:[["cat","/station/brief.txt"]] },
+    { title:"3. Маркер готовности", brief:"Найди в журнале строку с маркером READY.",
+      goal:"grep READY /station/events.log", hint:"grep СЛОВО ФАЙЛ ищет подстроку.",
+      checks:[["grep","READY","/station/events.log"]] },
+    { title:"4. Кто я в системе", brief:"Узнай свою учётную запись и права.",
       goal:"whoami → id", hint:"whoami — пользователь, id — UID/GID/группы.",
       checks:[["whoami"],["id"]] },
-    { title:"2. Скрытые файлы", brief:"В домашнем каталоге есть скрытая заметка.",
+    { title:"5. Скрытые файлы", brief:"В домашнем каталоге есть скрытая заметка.",
       goal:"ls -la /home/analyst → cat /home/analyst/.notes",
       hint:"-a показывает скрытые файлы, -l — права.",
       checks:[["ls","-la","/home/analyst"],["cat","/home/analyst/.notes"]] },
-    { title:"3. Поиск логов", brief:"Найди все журналы под /var/log.",
+    { title:"6. Поиск логов", brief:"Найди все журналы под /var/log.",
       goal:'find /var/log -name "*.log"', hint:"find ПУТЬ -name ШАБЛОН.",
       checks:[["find","/var/log","-name","*.log"]] },
-    { title:"4. Поиск атаки в журнале", brief:"Найди неудачные входы без учёта регистра.",
+    { title:"7. Поиск атаки в журнале", brief:"Найди неудачные входы без учёта регистра.",
       goal:'grep -i "failed password" /var/log/auth.log', hint:"Флаг -i = регистронезависимый поиск.",
       checks:[["grep","-i","failed password","/var/log/auth.log"]] },
-    { title:"5. Опасные права", brief:"Конфиг с паролем доступен всем на запись.",
+    { title:"8. Опасные права", brief:"Конфиг с паролем доступен всем на запись.",
       goal:"chmod 640 /srv/incident/config.yml", hint:"640 = владелец rw, группа r, остальные — ничего.",
       checks:[["chmod","640","/srv/incident/config.yml"]] },
-    { title:"6. Лишний процесс", brief:"В ps aux виден процесс с 98% CPU и майнинговым пулом.",
+    { title:"9. Лишний процесс", brief:"В ps aux виден процесс с 98% CPU и майнинговым пулом.",
       goal:"ps aux → kill 1337", hint:"Найди PID в ps aux, потом kill <PID>.",
       checks:[["ps"],["kill","1337"]] },
-    { title:"7. Подозрительный порт", brief:"Порт 4444 и тот же IP из логов. Закрой доступ.",
+    { title:"10. Подозрительный порт", brief:"Порт 4444 и тот же IP из логов. Закрой доступ.",
       goal:"ss -tulpn → iptables -A INPUT -s 203.0.113.45 -j DROP",
       hint:"ss покажет порт, iptables -A INPUT -s IP -j DROP заблокирует адрес.",
       checks:[["ss","-tulpn"],["iptables","-A","INPUT","-s","203.0.113.45","-j","DROP"]] },
-    { title:"8. Укрепление SSH", brief:"В sshd_config включён root-логин. Отключи его.",
+    { title:"11. Укрепление SSH", brief:"В sshd_config включён root-логин. Отключи его.",
       goal:'cat → sed -i "s/PermitRootLogin yes/PermitRootLogin no/" → systemctl restart sshd',
       hint:"sed -i меняет файл на месте, после правки перезапусти службу.",
       checks:[["cat","/etc/ssh/sshd_config"],["sed","-i","PermitRootLogin yes","PermitRootLogin no","/etc/ssh/sshd_config"],["systemctl","restart","sshd"]] },
-    { title:"9. Контроль целостности", brief:"Сверь журнал с эталонной суммой.",
+    { title:"12. Контроль целостности", brief:"Сверь журнал с эталонной суммой.",
       goal:"sha256sum /var/log/auth.log", hint:"Сравни вывод с /srv/incident/hashes.sha256.",
       checks:[["sha256sum","/var/log/auth.log"]] },
-    { title:"10. Финал: доказательства", brief:"Упакуй логи и перезапусти службу.",
+    { title:"13. Финал: доказательства", brief:"Упакуй логи и перезапусти службу.",
       goal:"tar -czf /srv/incident/evidence.tgz /var/log → systemctl restart sshd",
       hint:"tar -czf АРХИВ ПАПКА, затем systemctl restart sshd.",
       checks:[["tar","-czf","/srv/incident/evidence.tgz","/var/log"],["systemctl","restart","sshd"]] }
@@ -1860,6 +1868,10 @@ auto_restart = false`
       "/":{dir:true}, "/home":{dir:true}, "/etc":{dir:true}, "/etc/ssh":{dir:true},
       "/var":{dir:true}, "/var/log":{dir:true}, "/srv":{dir:true}, "/srv/incident":{dir:true},
       "/home/analyst":{dir:true},
+      "/station":{dir:true},
+      "/station/brief.txt":{data:"БОРТОВОЙ ЖУРНАЛ СТАНЦИИ «ГЕЛИОС-7»\nЗапись от 14.11.2087\n\nПосле сбоя питания основной канал связи не отвечает.\nПередатчик, скорее всего, цел: аварийный модуль должен\nбыл перейти в режим ожидания.\n\nВ журнале событий (events.log) последняя запись о состоянии\nпередатчика помечена маркером READY. Найди эту строку —\nпо ней мы поймём, что канал можно восстанавливать.\n\nНе запускай перезагрузку антенны, пока не увидишь READY.",mode:"644"},
+      "/station/events.log":{data:"2087-11-14T02:11:03Z boot power-on\n2087-11-14T02:11:04Z reactor: nominal\n2087-11-14T02:11:19Z comm: carrier lost\n2087-11-14T02:12:40Z antenna: parked\n2087-11-14T02:15:02Z diagnostic: transmitter self-test\n2087-11-14T02:15:03Z transmitter: OFFLINE (no power)\n2087-11-14T02:18:27Z solar array: charging\n2087-11-14T02:41:55Z battery: 82%\n2087-11-14T03:02:10Z transmitter: warming up\n2087-11-14T03:04:44Z transmitter: READY\n2087-11-14T03:05:01Z comm: handshake available",mode:"640"},
+
       "/home/analyst/.notes":{data:"Analyst: sudo есть только у admin.\nКлюч-подсказка: /srv/incident/keys.txt.",mode:"644"},
       "/home/analyst/keys.txt":{data:"key = OBF-2026-ALPHA",mode:"600"},
       "/srv/incident/config.yml":{data:"db_host: 10.0.0.5\ndb_password: s3cr3t-do-not-share",mode:"666"},
@@ -2230,17 +2242,15 @@ auto_restart = false`
 
       append((data.output || "").trimEnd());
 
-      const wasWon = state.won;
+      const wasDone = !!(state && state.completed);
       render(data.state);
 
-      if (!wasWon && data.state.won) {
+      if (!wasDone && data.state.completed) {
         append("");
         append("╔════════════════════════════════════════════╗");
-        append("║        СВЯЗЬ ВОССТАНОВЛЕНА                 ║");
+        append("║      РАССЛЕДОВАНИЕ ЗАВЕРШЕНО               ║");
         append("╚════════════════════════════════════════════╝");
-        append("Станция снова на связи. Отличная работа, кадет.");
-        append("Запускаю мини-игру «Защита канала»…");
-        arcadeAutoTimer = setTimeout(openArcade, 1200);
+        append("Отдел ИБ получил полный отчёт по инциденту.");
       }
     } catch (err) {
       if (myEpoch !== epoch) return;
@@ -2301,43 +2311,6 @@ auto_restart = false`
     } finally {
       resetting = false;
       resetBtn.disabled = false;
-      input.disabled = false;
-      input.focus();
-    }
-  });
-
-  linuxBtn.addEventListener("click", async () => {
-    if (resetting || busy) return;
-    linuxMode = !linuxMode;
-    epoch++;
-    resetting = true;
-    linuxBtn.disabled = true;
-    input.disabled = true;
-    linuxPanel.hidden = !linuxMode;
-    linuxBtn.textContent = linuxMode
-      ? "◀ Вернуться к миссии «Гелиос-7»"
-      : "▶ Тренажёр Linux (10 заданий)";
-
-    if (arcadeAutoTimer) { clearTimeout(arcadeAutoTimer); arcadeAutoTimer = null; }
-    closeArcade();
-    if (!victoryOverlay.hidden) hideVictory();
-    if (!defeatOverlay.hidden) hideDefeat();
-
-    history = [];
-    historyPos = 0;
-    input.value = "";
-    clearTerminal();
-    append(linuxMode
-      ? "ТРЕНАЖЁР LINUX · 10 заданий для 10.02.05\nНабери help, чтобы увидеть команды."
-      : "ВЕРНУЛИСЬ К МИССИИ «ГЕЛИОС-7»");
-
-    try {
-      render(await fetchState());
-    } catch (err) {
-      hintEl.textContent = "Не удалось загрузить состояние: " + err.message;
-    } finally {
-      resetting = false;
-      linuxBtn.disabled = false;
       input.disabled = false;
       input.focus();
     }

@@ -194,18 +194,18 @@ func TestHTTPLinuxTrainerFlow(t *testing.T) {
 
 	var state LinuxSnapshot
 	getJSON(t, client, srv.URL+"/api/linux/state", &state)
-	if state.Mission != 1 || state.Total != 10 {
+	if state.Mission != 1 || state.Total != 13 {
 		t.Fatalf("начальное состояние тренажёра: %+v", state)
 	}
 
 	var res LinuxResult
-	postJSON(t, client, srv.URL+"/api/linux/command", map[string]string{"command": "whoami"}, &res)
-	if res.Output != "analyst" || res.State.Done != 0 {
-		t.Fatalf("whoami: %+v", res)
+	postJSON(t, client, srv.URL+"/api/linux/command", map[string]string{"command": "ls /station"}, &res)
+	if !strings.Contains(res.Output, "brief.txt") || res.State.Done != 1 {
+		t.Fatalf("ls /station: %+v", res)
 	}
-	postJSON(t, client, srv.URL+"/api/linux/command", map[string]string{"command": "id"}, &res)
-	if res.State.Done != 1 || res.State.Score != 100 {
-		t.Fatalf("после id: %+v", res.State)
+	postJSON(t, client, srv.URL+"/api/linux/command", map[string]string{"command": "cat /station/brief.txt"}, &res)
+	if res.State.Done != 2 || res.State.Score != 200 {
+		t.Fatalf("после cat: %+v", res.State)
 	}
 
 	postJSON(t, client, srv.URL+"/api/linux/reset", nil, &state)
