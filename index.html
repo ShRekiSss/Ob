@@ -7,15 +7,15 @@
 <title>Гелиос-7 — восстанови связь</title>
 <style>
   :root {
-    --bg: #05090a;
-    --panel: #08110f;
-    --line: #173029;
-    --line-bright: #2e6b55;
-    --text: #cfe9dd;
-    --green: #6ef2a4;
-    --green-dim: #4aa77a;
+    --bg: #070b16;
+    --panel: #0d1424;
+    --line: #22304d;
+    --line-bright: #3c78b5;
+    --text: #dbe8ff;
+    --green: #5ce1e6;
+    --green-dim: #2f9aa8;
     --amber: #ffc857;
-    --muted: #648178;
+    --muted: #8396b8;
   }
 
   * { box-sizing: border-box; }
@@ -24,9 +24,28 @@
 
   body {
     margin: 0;
-    background: var(--bg);
+    background:
+      radial-gradient(900px 500px at 12% -10%, rgba(60, 120, 181, .20), transparent 70%),
+      radial-gradient(700px 420px at 100% 0%, rgba(92, 225, 230, .10), transparent 70%),
+      var(--bg);
     color: var(--text);
     font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, .018) 0,
+      rgba(255, 255, 255, .018) 1px,
+      transparent 1px,
+      transparent 4px
+    );
+    mix-blend-mode: overlay;
   }
 
   /* Многослойный фон: туманности, звёзды, сетка и виньетка.
@@ -38,10 +57,10 @@
     overflow: hidden;
     pointer-events: none;
     background:
-      radial-gradient(1200px 800px at 12% -10%, rgba(110, 242, 164, .12), transparent 60%),
-      radial-gradient(900px 700px at 88% 108%, rgba(255, 200, 87, .09), transparent 62%),
-      radial-gradient(700px 520px at 50% 45%, rgba(46, 120, 140, .10), transparent 70%),
-      linear-gradient(180deg, #03080a 0%, #050d0c 48%, #020605 100%);
+      radial-gradient(1200px 800px at 12% -10%, rgba(60, 120, 181, .18), transparent 60%),
+      radial-gradient(900px 700px at 88% 108%, rgba(92, 225, 230, .10), transparent 62%),
+      radial-gradient(700px 520px at 50% 45%, rgba(255, 200, 87, .05), transparent 70%),
+      linear-gradient(180deg, #050914 0%, #070d1c 48%, #040711 100%);
   }
 
   .nebula {
@@ -57,7 +76,7 @@
   .nebula--a {
     top: -28vmax;
     left: -24vmax;
-    background: radial-gradient(circle, rgba(52, 196, 132, .30), transparent 65%);
+    background: radial-gradient(circle, rgba(60, 140, 220, .30), transparent 65%);
     animation: nebula-drift-a 30s ease-in-out infinite alternate;
   }
 
@@ -200,7 +219,7 @@
   .app {
     position: relative;
     z-index: 1;
-    width: min(100% - 32px, 1000px);
+    width: min(100% - 32px, 1060px);
     min-height: 100dvh;
     margin: 0 auto;
     padding: 22px 0 26px;
@@ -215,6 +234,13 @@
     justify-content: space-between;
     gap: 20px;
     flex-wrap: wrap;
+    padding: 16px 20px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(15, 24, 44, .92), rgba(10, 16, 32, .78));
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(255, 255, 255, .05);
   }
 
   .brand {
@@ -224,10 +250,18 @@
   }
 
   .sigil {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
     color: var(--green);
-    font-size: 1.65rem;
+    font-size: 1.55rem;
     line-height: 1;
-    text-shadow: 0 0 18px rgba(110, 242, 164, .65);
+    border: 1px solid rgba(92, 225, 230, .35);
+    border-radius: 12px;
+    background: rgba(92, 225, 230, .07);
+    text-shadow: 0 0 18px rgba(92, 225, 230, .7);
+    box-shadow: 0 0 24px rgba(92, 225, 230, .12);
     animation: pulse 3.2s ease-in-out infinite;
   }
 
@@ -238,9 +272,13 @@
 
   h1 {
     margin: 0;
-    font-size: clamp(1.05rem, 2.4vw, 1.4rem);
-    letter-spacing: .22em;
-    color: #eafff4;
+    font-size: clamp(1.05rem, 2.4vw, 1.45rem);
+    font-weight: 700;
+    letter-spacing: .2em;
+    background: linear-gradient(90deg, #eaf6ff, var(--green));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 
   .brand p {
@@ -273,17 +311,18 @@
 
   .pip {
     flex: 1;
-    border: 1px solid #2a473d;
-    border-radius: 2px;
-    background: #0a1512;
-    transform: skewX(-18deg);
+    height: 10px;
+    border: 1px solid #2b3e60;
+    border-radius: 3px;
+    background: rgba(10, 18, 34, .9);
+    transform: skewX(-14deg);
     transition: background .25s, border-color .25s, box-shadow .25s;
   }
 
   .pip.on {
-    border-color: #ffcf6b;
-    background: linear-gradient(180deg, #ffd77a, #f0a93c);
-    box-shadow: 0 0 10px rgba(255, 190, 80, .42);
+    border-color: rgba(92, 225, 230, .8);
+    background: linear-gradient(180deg, #8ff5f2, #2ba9c9);
+    box-shadow: 0 0 12px rgba(92, 225, 230, .45);
   }
 
   .terminal-wrap {
@@ -293,14 +332,14 @@
     flex-direction: column;
     overflow: hidden;
     border: 1px solid var(--line);
-    border-radius: 10px;
-    background: rgba(6, 14, 12, .86);
-    -webkit-backdrop-filter: blur(7px);
-    backdrop-filter: blur(7px);
+    border-radius: 14px;
+    background: rgba(8, 14, 28, .88);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
     box-shadow:
-      0 24px 90px rgba(0, 0, 0, .55),
-      0 0 60px rgba(46, 180, 120, .06),
-      inset 0 0 0 1px rgba(110, 242, 164, .035);
+      0 28px 90px rgba(0, 0, 0, .5),
+      0 0 70px rgba(60, 120, 181, .10),
+      inset 0 0 0 1px rgba(92, 225, 230, .04);
   }
 
   .terminal-bar {
@@ -344,12 +383,12 @@
     overflow: auto;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
-    color: #a9e8c6;
+    color: #cfe4ff;
     font: inherit;
     font-size: .88rem;
-    line-height: 1.55;
-    text-shadow: 0 0 12px rgba(110, 242, 164, .14);
-    scrollbar-color: #244c3d transparent;
+    line-height: 1.6;
+    text-shadow: 0 0 12px rgba(92, 225, 230, .12);
+    scrollbar-color: #2b527e transparent;
     scrollbar-width: thin;
   }
 
@@ -358,12 +397,13 @@
     align-items: flex-start;
     gap: 12px;
     padding: 10px 14px;
-    border: 1px solid transparent;
-    border-left: 2px solid var(--line-bright);
-    background: linear-gradient(90deg, rgba(20, 48, 39, .62), rgba(6, 14, 12, .30) 80%);
-    -webkit-backdrop-filter: blur(5px);
-    backdrop-filter: blur(5px);
-    color: #9ec8b8;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--green);
+    border-radius: 10px;
+    background: linear-gradient(90deg, rgba(27, 52, 86, .55), rgba(10, 17, 32, .35) 80%);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    color: #b9d0f2;
     font-size: .82rem;
     line-height: 1.5;
     transition: border-color .25s, color .25s;
@@ -387,21 +427,40 @@
   .hint p { margin: 0; }
 
   .linux-panel {
-    margin: 10px 0 0;
-    padding: 11px 13px;
-    border: 1px solid var(--line-bright);
-    border-radius: 8px;
-    background: linear-gradient(180deg, #0a1714, #07100e);
+    position: relative;
+    margin: 2px 0 0;
+    padding: 16px 18px;
+    border: 1px solid rgba(92, 225, 230, .28);
+    border-radius: 14px;
+    background:
+      radial-gradient(500px 160px at 0% 0%, rgba(92, 225, 230, .10), transparent 70%),
+      linear-gradient(180deg, rgba(16, 27, 48, .96), rgba(9, 15, 30, .92));
+    box-shadow: 0 18px 46px rgba(0, 0, 0, .32), inset 0 1px 0 rgba(255, 255, 255, .05);
+    overflow: hidden;
+  }
+  .linux-panel::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--green), var(--amber));
   }
   .linux-panel[hidden] { display: none; }
   .linux-head {
-    font-size: 11px; letter-spacing: .12em; color: var(--green);
-    border-bottom: 1px solid var(--line); padding-bottom: 6px; margin-bottom: 8px;
+    font-size: 10px; letter-spacing: .17em; color: var(--green);
+    border-bottom: 1px solid var(--line); padding-bottom: 8px; margin-bottom: 11px;
+    text-shadow: 0 0 10px rgba(92, 225, 230, .35);
   }
-  .linux-panel h3 { margin: 0 0 5px; font-size: 14px; color: var(--amber); }
-  .linux-panel p { margin: 0 0 5px; font-size: 12.5px; }
-  .linux-goal { color: var(--green); }
-  .linux-meta { color: var(--muted); font-size: 11px; }
+  .linux-panel h3 { margin: 0 0 6px; font-size: 16px; color: var(--amber); letter-spacing: .02em; }
+  .linux-panel p { margin: 0 0 7px; font-size: 12.5px; line-height: 1.55; }
+  .linux-goal {
+    color: var(--green);
+    padding: 7px 10px;
+    border-left: 2px solid var(--green);
+    border-radius: 0 6px 6px 0;
+    background: rgba(92, 225, 230, .07);
+  }
+  .linux-meta { color: var(--muted); font-size: 11px; letter-spacing: .06em; }
   .mode-switch { display: flex; gap: 8px; flex-wrap: wrap; }
   .mode-switch .arcade-launch { margin-top: 0; }
 
@@ -411,19 +470,20 @@
     gap: 10px;
     padding: 10px 12px;
     border: 1px solid var(--line);
-    border-radius: 8px;
-    background: rgba(8, 17, 15, .82);
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .03);
+    border-radius: 12px;
+    background: rgba(11, 19, 36, .88);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05), 0 10px 30px rgba(0, 0, 0, .25);
     transition: border-color .2s, box-shadow .2s;
   }
 
   .command:focus-within {
-    border-color: var(--line-bright);
+    border-color: rgba(92, 225, 230, .6);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, .03),
-      0 0 0 3px rgba(110, 242, 164, .07);
+      inset 0 1px 0 rgba(255, 255, 255, .05),
+      0 0 0 3px rgba(92, 225, 230, .10),
+      0 0 24px rgba(92, 225, 230, .12);
   }
 
   .prompt {
@@ -449,23 +509,26 @@
   #input:disabled { opacity: .55; }
 
   .reset {
-    padding: 8px 11px;
-    border: 1px solid #3a4d46;
-    border-radius: 5px;
-    background: #111d19;
-    color: #9bb8ad;
+    padding: 9px 14px;
+    border: 1px solid rgba(92, 225, 230, .35);
+    border-radius: 8px;
+    background: linear-gradient(180deg, rgba(92, 225, 230, .14), rgba(92, 225, 230, .05));
+    color: #c9f7f5;
     font: inherit;
-    font-size: .68rem;
+    font-size: .7rem;
+    font-weight: 700;
     letter-spacing: .07em;
     white-space: nowrap;
     cursor: pointer;
-    transition: border-color .2s, color .2s, background .2s;
+    transition: transform .15s, border-color .2s, color .2s, background .2s, box-shadow .2s;
   }
 
   .reset:hover:not(:disabled) {
     border-color: var(--amber);
-    background: #1a2116;
+    background: linear-gradient(180deg, rgba(255, 200, 87, .18), rgba(255, 200, 87, .06));
     color: #ffd77a;
+    box-shadow: 0 0 18px rgba(255, 200, 87, .18);
+    transform: translateY(-1px);
   }
 
   .reset:disabled { opacity: .5; cursor: wait; }
@@ -701,7 +764,7 @@
       <span class="sigil" aria-hidden="true">◈</span>
       <div>
         <h1>ОТДЕЛ ИБ</h1>
-        <p>расследование инцидента · v1.6.0</p>
+        <p>расследование инцидента · v1.6.1</p>
       </div>
     </div>
     <div class="boss">
@@ -728,7 +791,7 @@
     <p id="hint">Загрузка состояния канала…</p>
   </section>
 
-  <div class="linux-panel" id="linux-panel" hidden>
+  <div class="linux-panel" id="linux-panel">
     <div class="linux-head"><span>ОТДЕЛ ИБ · РАССЛЕДОВАНИЕ · 13 ЗАДАНИЙ · 10.02.05</span></div>
     <h3 id="linux-title"></h3>
     <p id="linux-brief"></p>
@@ -1812,46 +1875,46 @@ auto_restart = false`
   // ── Тренажёр Linux для file:// (зеркало linux.go) ─────────────────────
   const L_MISSIONS = [
     { title:"1. Брифинг отдела ИБ", brief:"Тебя приняли стажёром в отдел ИБ. Начни с каталога /station.",
-      goal:"ls /station", hint:"ls ПУТЬ показывает содержимое каталога.",
+      goal:"Разберись, что находится в каталоге /station.", hint:"ls ПУТЬ показывает содержимое каталога.",
       checks:[["ls","/station"]] },
     { title:"2. Бортовой журнал", brief:"Прочитай описание инцидента целиком.",
-      goal:"cat /station/brief.txt", hint:"cat ФАЙЛ выводит содержимое файла.",
+      goal:"Прочитай описание инцидента в этом каталоге.", hint:"cat ФАЙЛ выводит содержимое файла.",
       checks:[["cat","/station/brief.txt"]] },
     { title:"3. Маркер готовности", brief:"Найди в журнале строку с маркером READY.",
-      goal:"grep READY /station/events.log", hint:"grep СЛОВО ФАЙЛ ищет подстроку.",
+      goal:"Найди в журнале отметку о готовности передатчика.", hint:"grep СЛОВО ФАЙЛ ищет подстроку.",
       checks:[["grep","READY","/station/events.log"]] },
     { title:"4. Кто я в системе", brief:"Узнай свою учётную запись и права.",
-      goal:"whoami → id", hint:"whoami — пользователь, id — UID/GID/группы.",
+      goal:"Узнай, под кем ты работаешь и какие у тебя права.", hint:"whoami — пользователь, id — UID/GID/группы.",
       checks:[["whoami"],["id"]] },
     { title:"5. Скрытые файлы", brief:"В домашнем каталоге есть скрытая заметка.",
-      goal:"ls -la /home/analyst → cat /home/analyst/.notes",
+      goal:"Найди скрытую заметку в домашнем каталоге и прочитай её.",
       hint:"-a показывает скрытые файлы, -l — права.",
       checks:[["ls","-la","/home/analyst"],["cat","/home/analyst/.notes"]] },
     { title:"6. Поиск логов", brief:"Найди все журналы под /var/log.",
-      goal:'find /var/log -name "*.log"', hint:"find ПУТЬ -name ШАБЛОН.",
+      goal:"Выясни, где хранятся журналы узла.", hint:"find ПУТЬ -name ШАБЛОН.",
       checks:[["find","/var/log","-name","*.log"]] },
     { title:"7. Поиск атаки в журнале", brief:"Найди неудачные входы без учёта регистра.",
-      goal:'grep -i "failed password" /var/log/auth.log', hint:"Флаг -i = регистронезависимый поиск.",
+      goal:"Найди следы неудачных попыток входа в журнале.", hint:"Флаг -i = регистронезависимый поиск.",
       checks:[["grep","-i","failed password","/var/log/auth.log"]] },
     { title:"8. Опасные права", brief:"Конфиг с паролем доступен всем на запись.",
-      goal:"chmod 640 /srv/incident/config.yml", hint:"640 = владелец rw, группа r, остальные — ничего.",
+      goal:"Исправь опасные права на конфиге с секретом.", hint:"640 = владелец rw, группа r, остальные — ничего.",
       checks:[["chmod","640","/srv/incident/config.yml"]] },
     { title:"9. Лишний процесс", brief:"В ps aux виден процесс с 98% CPU и майнинговым пулом.",
-      goal:"ps aux → kill 1337", hint:"Найди PID в ps aux, потом kill <PID>.",
+      goal:"Найди и останови лишний процесс.", hint:"Найди PID в ps aux, потом kill <PID>.",
       checks:[["ps"],["kill","1337"]] },
     { title:"10. Подозрительный порт", brief:"Порт 4444 и тот же IP из логов. Закрой доступ.",
-      goal:"ss -tulpn → iptables -A INPUT -s 203.0.113.45 -j DROP",
+      goal:"Найди подозрительный порт и закрой доступ с этого адреса.",
       hint:"ss покажет порт, iptables -A INPUT -s IP -j DROP заблокирует адрес.",
       checks:[["ss","-tulpn"],["iptables","-A","INPUT","-s","203.0.113.45","-j","DROP"]] },
     { title:"11. Укрепление SSH", brief:"В sshd_config включён root-логин. Отключи его.",
-      goal:'cat → sed -i "s/PermitRootLogin yes/PermitRootLogin no/" → systemctl restart sshd',
+      goal:"Убери опасную настройку SSH и перезапусти службу.",
       hint:"sed -i меняет файл на месте, после правки перезапусти службу.",
       checks:[["cat","/etc/ssh/sshd_config"],["sed","-i","PermitRootLogin yes","PermitRootLogin no","/etc/ssh/sshd_config"],["systemctl","restart","sshd"]] },
     { title:"12. Контроль целостности", brief:"Сверь журнал с эталонной суммой.",
-      goal:"sha256sum /var/log/auth.log", hint:"Сравни вывод с /srv/incident/hashes.sha256.",
+      goal:"Проверь целостность журнала по эталонной сумме.", hint:"Сравни вывод с /srv/incident/hashes.sha256.",
       checks:[["sha256sum","/var/log/auth.log"]] },
     { title:"13. Финал: доказательства", brief:"Упакуй логи и перезапусти службу.",
-      goal:"tar -czf /srv/incident/evidence.tgz /var/log → systemctl restart sshd",
+      goal:"Собери доказательства и заверши расследование.",
       hint:"tar -czf АРХИВ ПАПКА, затем systemctl restart sshd.",
       checks:[["tar","-czf","/srv/incident/evidence.tgz","/var/log"],["systemctl","restart","sshd"]] }
   ];

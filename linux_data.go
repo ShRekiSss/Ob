@@ -98,35 +98,35 @@ var linuxMissions = []linuxMission{
 	{
 		Title:  "1. Брифинг отдела ИБ",
 		Brief:  "Тебя приняли стажёром в отдел информационной безопасности. На узле есть каталог /station — начни с него.",
-		Goal:   "Выполни ls /station.",
+		Goal:   "Разберись, что находится в каталоге /station.",
 		Hint:   "ls ПУТЬ показывает содержимое каталога: ls /station.",
 		Checks: []linuxCheck{{Cmd: "ls", Args: []string{"/station"}}},
 	},
 	{
 		Title:  "2. Бортовой журнал",
 		Brief:  "В каталоге есть описание инцидента. Прочитай его целиком, прежде чем действовать.",
-		Goal:   "Выполни cat /station/brief.txt.",
+		Goal:   "Прочитай описание инцидента в этом каталоге.",
 		Hint:   "cat ФАЙЛ выводит содержимое файла: cat /station/brief.txt.",
 		Checks: []linuxCheck{{Cmd: "cat", Args: []string{"/station/brief.txt"}}},
 	},
 	{
 		Title:  "3. Маркер готовности",
 		Brief:  "В журнале событий нужно найти строку с маркером READY — без неё нельзя начинать восстановление.",
-		Goal:   "Выполни grep READY /station/events.log.",
+		Goal:   "Найди в журнале отметку о готовности передатчика.",
 		Hint:   "grep СЛОВО ФАЙЛ ищет подстроку: grep READY /station/events.log.",
 		Checks: []linuxCheck{{Cmd: "grep", Args: []string{"READY", "/station/events.log"}}},
 	},
 	{
 		Title:  "4. Кто я в системе",
 		Brief:  "Ты стажёр отдела ИБ. Прежде чем что-то делать, узнай свою учётную запись и права.",
-		Goal:   "Выполни whoami, затем id.",
+		Goal:   "Узнай, под кем ты работаешь и какие у тебя права.",
 		Hint:   "whoami покажет пользователя, id — UID, GID и группы. Запомни группу sudo.",
 		Checks: []linuxCheck{{Cmd: "whoami"}, {Cmd: "id"}},
 	},
 	{
 		Title: "5. Скрытые файлы",
 		Brief: "В домашнем каталоге есть скрытая заметка. Обычный ls её не покажет.",
-		Goal:  "Выполни ls -la /home/analyst, затем cat /home/analyst/.notes.",
+		Goal:  "Найди скрытую заметку в домашнем каталоге и прочитай её.",
 		Hint:  "Ключ -a показывает скрытые файлы, -l — права и владельца.",
 		Checks: []linuxCheck{
 			{Cmd: "ls", Args: []string{"-la", "/home/analyst"}},
@@ -136,35 +136,35 @@ var linuxMissions = []linuxMission{
 	{
 		Title:  "6. Поиск логов",
 		Brief:  "Нужно быстро найти все журналы под /var/log, не перебирая каталоги вручную.",
-		Goal:   "Выполни find /var/log -name \"*.log\".",
+		Goal:   "Выясни, где хранятся журналы узла.",
 		Hint:   "find ПУТЬ -name ШАБЛОН. Шаблон возьми в кавычках: \"*.log\".",
 		Checks: []linuxCheck{{Cmd: "find", Args: []string{"/var/log", "-name", "*.log"}}},
 	},
 	{
 		Title:  "7. Поиск атаки в журнале",
 		Brief:  "В auth.log есть неудачные попытки входа. Регистр сообщений может отличаться.",
-		Goal:   "Выполни grep -i \"failed password\" /var/log/auth.log.",
+		Goal:   "Найди следы неудачных попыток входа в журнале.",
 		Hint:   "Флаг -i делает поиск регистронезависимым. Запиши IP атакующего.",
 		Checks: []linuxCheck{{Cmd: "grep", Args: []string{"-i", "failed password", "/var/log/auth.log"}}},
 	},
 	{
 		Title:  "8. Опасные права",
 		Brief:  "Конфиг с паролем доступен всем на запись. По принципу наименьших прав это надо исправить.",
-		Goal:   "Выполни chmod 640 /srv/incident/config.yml.",
+		Goal:   "Исправь опасные права на конфиге с секретом.",
 		Hint:   "chmod 640 = владелец читает/пишет, группа читает, остальные — ничего.",
 		Checks: []linuxCheck{{Cmd: "chmod", Args: []string{"640", "/srv/incident/config.yml"}}},
 	},
 	{
 		Title:  "9. Лишний процесс",
 		Brief:  "В ps aux виден процесс с подозрительно высоким CPU и майнинговым пулом в аргументах.",
-		Goal:   "Выполни ps aux, затем kill 1337.",
+		Goal:   "Найди и останови лишний процесс.",
 		Hint:   "Сначала найди PID в выводе ps aux, потом kill <PID>.",
 		Checks: []linuxCheck{{Cmd: "ps"}, {Cmd: "kill", Args: []string{"1337"}}},
 	},
 	{
 		Title: "10. Подозрительный порт",
 		Brief: "Слушающий порт 4444 и тот же IP из логов. Закрой доступ с этого адреса.",
-		Goal:  "Выполни ss -tulpn, затем iptables -A INPUT -s 203.0.113.45 -j DROP.",
+		Goal:  "Найди подозрительный порт и закрой доступ с этого адреса.",
 		Hint:  "ss показывает слушающие сокеты и PID. iptables -A INPUT -s IP -j DROP блокирует адрес.",
 		Checks: []linuxCheck{
 			{Cmd: "ss", Args: []string{"-tulpn"}},
@@ -174,7 +174,7 @@ var linuxMissions = []linuxMission{
 	{
 		Title: "11. Укрепление SSH",
 		Brief: "В sshd_config включён root-логин. Отключи его и перезапусти службу.",
-		Goal:  "cat /etc/ssh/sshd_config → sed -i \"s/PermitRootLogin yes/PermitRootLogin no/\" /etc/ssh/sshd_config → systemctl restart sshd.",
+		Goal:  "Убери опасную настройку SSH и перезапусти службу.",
 		Hint:  "sed -i меняет файл на месте. После правки конфига службу надо перезапустить.",
 		Checks: []linuxCheck{
 			{Cmd: "cat", Args: []string{"/etc/ssh/sshd_config"}},
@@ -185,14 +185,14 @@ var linuxMissions = []linuxMission{
 	{
 		Title:  "12. Контроль целостности",
 		Brief:  "Эталонная сумма лежит в hashes.sha256. Сверь журнал с эталоном.",
-		Goal:   "Выполни sha256sum /var/log/auth.log.",
+		Goal:   "Проверь целостность журнала по эталонной сумме.",
 		Hint:   "sha256sum выводит хеш и имя файла. Сравни его с содержимым hashes.sha256.",
 		Checks: []linuxCheck{{Cmd: "sha256sum", Args: []string{"/var/log/auth.log"}}},
 	},
 	{
 		Title: "13. Финал: доказательства",
 		Brief: "Упакуй логи в архив и перезапусти службу после всех изменений.",
-		Goal:  "tar -czf /srv/incident/evidence.tgz /var/log → systemctl restart sshd.",
+		Goal:  "Собери доказательства и заверши расследование.",
 		Hint:  "tar -czf АРХИВ ПАПКА создаёт сжатый архив. В конце снова перезапусти sshd.",
 		Checks: []linuxCheck{
 			{Cmd: "tar", Args: []string{"-czf", "/srv/incident/evidence.tgz", "/var/log"}},

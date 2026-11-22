@@ -4,6 +4,7 @@
 /helios7.exe
 /helios7
 /station-mission.exe
+*.exe~
 
 # Артефакты тестов и редакторов
 *.test
