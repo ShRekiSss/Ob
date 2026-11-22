@@ -386,6 +386,25 @@
 
   .hint p { margin: 0; }
 
+  .linux-panel {
+    margin: 10px 0 0;
+    padding: 11px 13px;
+    border: 1px solid var(--line-bright);
+    border-radius: 8px;
+    background: linear-gradient(180deg, #0a1714, #07100e);
+  }
+  .linux-panel[hidden] { display: none; }
+  .linux-head {
+    font-size: 11px; letter-spacing: .12em; color: var(--green);
+    border-bottom: 1px solid var(--line); padding-bottom: 6px; margin-bottom: 8px;
+  }
+  .linux-panel h3 { margin: 0 0 5px; font-size: 14px; color: var(--amber); }
+  .linux-panel p { margin: 0 0 5px; font-size: 12.5px; }
+  .linux-goal { color: var(--green); }
+  .linux-meta { color: var(--muted); font-size: 11px; }
+  .mode-switch { display: flex; gap: 8px; flex-wrap: wrap; }
+  .mode-switch .arcade-launch { margin-top: 0; }
+
   .command {
     display: flex;
     align-items: center;
@@ -682,7 +701,7 @@
       <span class="sigil" aria-hidden="true">◈</span>
       <div>
         <h1>ГЕЛИОС-7</h1>
-        <p>терминал восстановления связи · v1.4.2</p>
+        <p>терминал восстановления связи · v1.5.0</p>
       </div>
     </div>
     <div class="boss">
@@ -709,7 +728,18 @@
     <p id="hint">Загрузка состояния канала…</p>
   </section>
 
-  <button class="arcade-launch" id="arcade-btn" type="button" hidden>▶ Мини-игра: защити канал</button>
+  <div class="linux-panel" id="linux-panel" hidden>
+    <div class="linux-head"><span>ТРЕНАЖЁР LINUX · 10 ЗАДАНИЙ · 10.02.05</span></div>
+    <h3 id="linux-title"></h3>
+    <p id="linux-brief"></p>
+    <p class="linux-goal" id="linux-goal"></p>
+    <p class="linux-meta"><span id="linux-progress"></span> · <span id="linux-score"></span></p>
+  </div>
+
+  <div class="mode-switch">
+    <button class="arcade-launch" id="linux-btn" type="button">▶ Тренажёр Linux (10 заданий)</button>
+    <button class="arcade-launch" id="arcade-btn" type="button" hidden>▶ Мини-игра: защити канал</button>
+  </div>
 
   <form class="command" id="form" autocomplete="off">
     <label class="prompt" id="prompt" for="input">cadet@helio-7:/$</label>
@@ -778,6 +808,15 @@
   const hpTrack = document.getElementById("hp-track");
   const hintEl = document.getElementById("hint");
   const hintBox = document.getElementById("hint-box");
+  const linuxBtn = document.getElementById("linux-btn");
+  const linuxPanel = document.getElementById("linux-panel");
+  const linuxTitle = document.getElementById("linux-title");
+  const linuxBrief = document.getElementById("linux-brief");
+  const linuxGoal = document.getElementById("linux-goal");
+  const linuxProgress = document.getElementById("linux-progress");
+  const linuxScore = document.getElementById("linux-score");
+  let linuxMode = false;
+  let linuxGame = null;
 
   // Помехи на линии: надпись «станция · канал» мигает, переключая 6 и 7.
   const channelLabel = document.getElementById("channel-label");
@@ -1771,8 +1810,301 @@ auto_restart = false`
     return "cadet@helio-7:" + cwd + "$";
   }
 
+  // ── Тренажёр Linux для file:// (зеркало linux.go) ─────────────────────
+  const L_MISSIONS = [
+    { title:"1. Кто я в системе", brief:"Узнай свою учётную запись и права.",
+      goal:"whoami → id", hint:"whoami — пользователь, id — UID/GID/группы.",
+      checks:[["whoami"],["id"]] },
+    { title:"2. Скрытые файлы", brief:"В домашнем каталоге есть скрытая заметка.",
+      goal:"ls -la /home/analyst → cat /home/analyst/.notes",
+      hint:"-a показывает скрытые файлы, -l — права.",
+      checks:[["ls","-la","/home/analyst"],["cat","/home/analyst/.notes"]] },
+    { title:"3. Поиск логов", brief:"Найди все журналы под /var/log.",
+      goal:'find /var/log -name "*.log"', hint:"find ПУТЬ -name ШАБЛОН.",
+      checks:[["find","/var/log","-name","*.log"]] },
+    { title:"4. Поиск атаки в журнале", brief:"Найди неудачные входы без учёта регистра.",
+      goal:'grep -i "failed password" /var/log/auth.log', hint:"Флаг -i = регистронезависимый поиск.",
+      checks:[["grep","-i","failed password","/var/log/auth.log"]] },
+    { title:"5. Опасные права", brief:"Конфиг с паролем доступен всем на запись.",
+      goal:"chmod 640 /srv/incident/config.yml", hint:"640 = владелец rw, группа r, остальные — ничего.",
+      checks:[["chmod","640","/srv/incident/config.yml"]] },
+    { title:"6. Лишний процесс", brief:"В ps aux виден процесс с 98% CPU и майнинговым пулом.",
+      goal:"ps aux → kill 1337", hint:"Найди PID в ps aux, потом kill <PID>.",
+      checks:[["ps"],["kill","1337"]] },
+    { title:"7. Подозрительный порт", brief:"Порт 4444 и тот же IP из логов. Закрой доступ.",
+      goal:"ss -tulpn → iptables -A INPUT -s 203.0.113.45 -j DROP",
+      hint:"ss покажет порт, iptables -A INPUT -s IP -j DROP заблокирует адрес.",
+      checks:[["ss","-tulpn"],["iptables","-A","INPUT","-s","203.0.113.45","-j","DROP"]] },
+    { title:"8. Укрепление SSH", brief:"В sshd_config включён root-логин. Отключи его.",
+      goal:'cat → sed -i "s/PermitRootLogin yes/PermitRootLogin no/" → systemctl restart sshd',
+      hint:"sed -i меняет файл на месте, после правки перезапусти службу.",
+      checks:[["cat","/etc/ssh/sshd_config"],["sed","-i","PermitRootLogin yes","PermitRootLogin no","/etc/ssh/sshd_config"],["systemctl","restart","sshd"]] },
+    { title:"9. Контроль целостности", brief:"Сверь журнал с эталонной суммой.",
+      goal:"sha256sum /var/log/auth.log", hint:"Сравни вывод с /srv/incident/hashes.sha256.",
+      checks:[["sha256sum","/var/log/auth.log"]] },
+    { title:"10. Финал: доказательства", brief:"Упакуй логи и перезапусти службу.",
+      goal:"tar -czf /srv/incident/evidence.tgz /var/log → systemctl restart sshd",
+      hint:"tar -czf АРХИВ ПАПКА, затем systemctl restart sshd.",
+      checks:[["tar","-czf","/srv/incident/evidence.tgz","/var/log"],["systemctl","restart","sshd"]] }
+  ];
+  const L_AUTHLOG = [
+    "Nov 21 03:12:11 ks sshd[1201]: Accepted password for analyst from 10.0.0.12 port 54321",
+    "Nov 21 03:13:02 ks sshd[1204]: Failed password for root from 203.0.113.45 port 40122 ssh2",
+    "Nov 21 03:13:05 ks sshd[1204]: Failed password for root from 203.0.113.45 port 40124 ssh2",
+    "Nov 21 03:13:09 ks sshd[1204]: Failed password for root from 203.0.113.45 port 40127 ssh2",
+    "Nov 21 03:14:01 ks sshd[1210]: Accepted password for analyst from 10.0.0.12 port 54322"
+  ].join("\n");
+
+  function linuxFS() {
+    return {
+      "/":{dir:true}, "/home":{dir:true}, "/etc":{dir:true}, "/etc/ssh":{dir:true},
+      "/var":{dir:true}, "/var/log":{dir:true}, "/srv":{dir:true}, "/srv/incident":{dir:true},
+      "/home/analyst":{dir:true},
+      "/home/analyst/.notes":{data:"Analyst: sudo есть только у admin.\nКлюч-подсказка: /srv/incident/keys.txt.",mode:"644"},
+      "/home/analyst/keys.txt":{data:"key = OBF-2026-ALPHA",mode:"600"},
+      "/srv/incident/config.yml":{data:"db_host: 10.0.0.5\ndb_password: s3cr3t-do-not-share",mode:"666"},
+      "/srv/incident/hashes.sha256":{data:"9f2c4a1b7e3d8065c11b0a2f4d6e8a90  /var/log/auth.log",mode:"644"},
+      "/etc/ssh/sshd_config":{data:"Port 22\nPermitRootLogin yes\nPasswordAuthentication yes\nMaxAuthTries 6",mode:"644"},
+      "/var/log/syslog":{data:"cron: session opened\nkernel: eth0 link up\nsyslog: rotation complete",mode:"640"},
+      "/var/log/auth.log":{data:L_AUTHLOG,mode:"640",hash:"9f2c4a1b7e3d8065c11b0a2f4d6e8a90"}
+    };
+  }
+
+  function ensureLinuxGame() {
+    if (!linuxGame) linuxGame = createLinuxGame();
+    return linuxGame;
+  }
+
+  function createLinuxGame() {
+    let fs = linuxFS();
+    const makeProcs = () => [
+      {pid:1,user:"root",cpu:"0.0",cmd:"/sbin/init"},
+      {pid:1201,user:"analyst",cpu:"0.0",cmd:"sshd: analyst@pts/0"},
+      {pid:1337,user:"nobody",cpu:"98.7",cmd:"./xmrig --pool 203.0.113.45:4444"}
+    ];
+    const makeSockets = () => [
+      {proto:"tcp",addr:"0.0.0.0:22",state:"LISTEN",proc:"1201/sshd"},
+      {proto:"tcp",addr:"10.0.0.12:54321",state:"ESTAB",proc:"1201/sshd"},
+      {proto:"tcp",addr:"0.0.0.0:4444",state:"LISTEN",proc:"1337/xmrig"}
+    ];
+    let procs = makeProcs();
+    let sockets = makeSockets();
+    let cwd = "/home/analyst", mission = 0, hints = 0, mistakes = 0, finished = false;
+    let checks = L_MISSIONS.map(m => m.checks.map(() => false));
+    function args(line) {
+      const fields = line.trim().split(/\s+/).filter(Boolean);
+      if (!fields.length) return {cmd:"",args:[]};
+      const out = [];
+      for (let i = 1; i < fields.length; i++) {
+        let a = fields[i];
+        const q = a[0] === '"' || a[0] === "'" ? a[0] : null;
+        if (q && !(a.length > 1 && a[a.length-1] === q)) {
+          while (i + 1 < fields.length) {
+            i++;
+            a += " " + fields[i];
+            if (fields[i][fields[i].length-1] === q) break;
+          }
+        }
+        out.push(a.replace(/^["']|["']$/g, ""));
+      }
+      return {cmd:fields[0].toLowerCase(),args:out};
+    }
+
+    function resolve(arg) {
+      if (!arg || arg === ".") return cwd;
+      if (arg.startsWith("/")) return arg.replace(/\/+/g,"/").replace(/\/+$/,"") || "/";
+      return resolve(cwd.replace(/\/+/g,"/").replace(/\/+$/,"") + "/" + arg);
+    }
+
+    function progress(cmd, as) {
+      if (mission >= L_MISSIONS.length) return;
+      const check = L_MISSIONS[mission].checks;
+      check.forEach((need, i) => {
+        if (checks[mission][i] || need[0] !== cmd) return;
+        const ok = need.slice(1).every(n => as.some(a => a.includes(n)));
+        if (ok) checks[mission][i] = true;
+      });
+      if (checks[mission].every(Boolean)) {
+        if (mission === L_MISSIONS.length - 1) finished = true;
+        else mission++;
+      }
+    }
+
+    function glob(name, pattern) {
+      const parts = pattern.split("*");
+      if (parts.length === 1) return name === pattern;
+      if (!name.startsWith(parts[0])) return false;
+      let rest = name.slice(parts[0].length);
+      for (let i = 1; i < parts.length; i++) {
+        if (!parts[i]) continue;
+        const at = rest.indexOf(parts[i]);
+        if (at < 0) return false;
+        rest = rest.slice(at + parts[i].length);
+      }
+      return true;
+    }
+
+    function snapshot() {
+      const m = L_MISSIONS[mission];
+      const done = finished ? L_MISSIONS.length : mission;
+      const score = Math.max(0, done*100 - hints*10 - mistakes*5);
+      return {
+        mission:mission+1, total:L_MISSIONS.length, title:m.title, brief:m.brief,
+        goal:m.goal, hint:m.hint, done:done, step_done:checks[mission].filter(Boolean).length,
+        step_total:checks[mission].length, score:score, cwd:cwd, completed:finished
+      };
+    }
+
+    function run(line) {
+      const {cmd,args:as} = args(line);
+      if (!cmd) return "";
+      progress(cmd, as);
+      switch (cmd) {
+        case "whoami": return "analyst";
+        case "id": return "uid=1001(analyst) gid=1001(analyst) groups=1001(analyst),27(sudo),100(security)";
+        case "pwd": return cwd;
+        case "cd": {
+          const t = resolve(as[0] || "/");
+          if (!fs[t]) return "cd: " + t + ": нет такого каталога";
+          if (!fs[t].dir) return "cd: " + t + ": не каталог";
+          cwd = t; return "";
+        }
+        case "ls": {
+          const long = as.some(a => a.startsWith("-"));
+          const target = resolve(as.find(a => !a.startsWith("-")) || ".");
+          const node = fs[target];
+          if (!node) return "ls: нет такого файла или каталога";
+          if (!node.dir) return target.split("/").pop();
+          const names = Object.keys(fs).filter(p => p !== target && p.startsWith(target === "/" ? "/" : target + "/") && p.slice((target === "/" ? 1 : target.length+1)).indexOf("/") < 0).map(p => p.split("/").pop()).sort();
+          if (!long) return names.length ? names.join("\n") : "(пусто)";
+          return ["drwxr-xr-x  .","drwxr-xr-x  .."].concat(names.map(n => {
+            const f = fs[target === "/" ? "/"+n : target+"/"+n];
+            return (f.dir ? "d" : "-") + (f.mode || "755") + "  " + n;
+          })).join("\n");
+        }
+        case "cat": {
+          const t = resolve(as[0] || "");
+          const node = fs[t];
+          if (!node) return "cat: " + (as[0]||"") + ": нет такого файла";
+          if (node.dir) return "cat: это каталог";
+          return node.data.replace(/\n+$/,"");
+        }
+        case "find": {
+          const root = resolve(as.find(a => !a.startsWith("-")) || "/");
+          const idx = as.indexOf("-name");
+          const pattern = idx >= 0 ? as[idx+1] : "";
+          const matches = Object.keys(fs).filter(p => p.startsWith(root + "/") && !fs[p].dir &&
+            (!pattern || glob(p.split("/").pop(), pattern)));
+          return matches.length ? matches.sort().join("\n") : "ничего не найдено";
+        }
+        case "grep": {
+          const insensitive = as.includes("-i"), count = as.includes("-c");
+          const rest = as.filter(a => !a.startsWith("-"));
+          if (rest.length < 2) return "grep: использование: grep [-i] [-c] СЛОВО ФАЙЛ";
+          const needle = insensitive ? rest[0].toLowerCase() : rest[0];
+          const node = fs[resolve(rest[rest.length-1])];
+          if (!node) return "grep: нет такого файла";
+          const lines = node.data.replace(/\n+$/,"").split("\n");
+          const found = lines.filter(l => (insensitive ? l.toLowerCase() : l).includes(needle));
+          if (count) return String(found.length);
+          return found.length ? found.join("\n") : "совпадений не найдено";
+        }
+        case "chmod": {
+          const t = resolve(as[1] || "");
+          if (!fs[t]) return "chmod: нет такого файла";
+          fs[t].mode = as[0];
+          return "права " + t + " установлены: " + as[0];
+        }
+        case "ps": return ["USER       PID  %CPU  COMMAND"].concat(procs.map(p =>
+          (p.user + "          ").slice(0,10) + " " + (p.pid + "    ").slice(0,4) + " " + (p.cpu + "     ").slice(0,5) + " " + p.cmd)).join("\n");
+        case "kill": {
+          const pid = Number(as[0]);
+          const i = procs.findIndex(p => p.pid === pid);
+          if (i < 0) return "kill: процесс не найден";
+          procs.splice(i,1);
+          sockets = sockets.filter(s => !s.proc.startsWith(pid + "/"));
+          return "процесс " + pid + " завершён";
+        }
+        case "ss": return ["Proto  Local Address        State    PID/Program"].concat(sockets.map(s =>
+          (s.proto+"      ").slice(0,6) + " " + (s.addr+"                    ").slice(0,20) + " " +
+          (s.state+"        ").slice(0,8) + " " + s.proc)).join("\n");
+        case "iptables": return "правило добавлено: " + as.join(" ");
+        case "sed": {
+          const t = resolve(as[as.length-1] || "");
+          const node = fs[t];
+          if (!node) return "sed: нет такого файла";
+          const expr = as.find(a => a.startsWith("s/")) || "";
+          const parts = expr.slice(2).split("/");
+          if (parts.length >= 2) node.data = node.data.split(parts[0]).join(parts[1]);
+          return "файл " + t + " изменён";
+        }
+        case "sha256sum": {
+          const t = resolve(as[0] || "");
+          const node = fs[t];
+          if (!node) return "sha256sum: нет такого файла";
+          return (node.hash || "d41d8cd98f00b204e9800998ecf8427e") + "  " + t;
+        }
+        case "tar": {
+          const i = as.indexOf("-czf");
+          const t = resolve(i >= 0 ? as[i+1] || "" : "");
+          fs[t] = {data:"[архив]",mode:"644"};
+          return "архив создан: " + t;
+        }
+        case "systemctl": return "служба " + (as[1] || "") + " перезапущена";
+        case "hint": hints++; return "Подсказка: " + L_MISSIONS[mission].hint;
+        case "help": return "ТРЕНАЖЁР LINUX: whoami, id, pwd, ls [-la], cd, cat, find, grep [-i] [-c], chmod, ps aux, kill PID, ss -tulpn, iptables, sed -i, sha256sum, tar -czf, systemctl restart, hint, reset, clear";
+        case "reset": { resetLocal(); return "Тренажёр Linux начат заново."; }
+        case "clear": return "";
+        default: mistakes++; return "команда не найдена: " + cmd + "\nНабери help.";
+      }
+    }
+
+    function resetLocal() {
+      fs = linuxFS(); procs = makeProcs(); sockets = makeSockets();
+      cwd = "/home/analyst"; mission = 0; hints = 0; mistakes = 0; finished = false;
+      checks = L_MISSIONS.map(m => m.checks.map(() => false));
+      return snapshot();
+    }
+
+    return {
+      state: snapshot,
+      execute: line => ({output:run(line), state:snapshot()}),
+      reset: resetLocal
+    };
+  }
+
+  function renderLinux(next) {
+    linuxTitle.textContent = next.completed ? "Все 10 заданий выполнены" : next.title;
+    linuxBrief.textContent = next.brief;
+    linuxGoal.textContent = next.completed
+      ? "Итог: " + next.score + " очков. Набери reset, чтобы пройти заново."
+      : next.goal;
+    linuxProgress.textContent = "Задание " + Math.min(next.mission, next.total) +
+      " / " + next.total + " · шаг " + next.step_done + "/" + next.step_total;
+    linuxScore.textContent = next.score + " очков";
+    hintEl.textContent = next.completed
+      ? "Отличная работа. Тренажёр пройден."
+      : "Команды: help · подсказка: hint (−10 очков) · сброс: reset";
+    hpText.textContent = next.done + " / " + next.total + " заданий";
+    hpTrack.replaceChildren();
+    for (let i = 0; i < next.total; i++) {
+      const pip = document.createElement("span");
+      pip.className = "pip" + (i < next.done ? " on" : "");
+      hpTrack.appendChild(pip);
+    }
+    hpTrack.setAttribute("aria-label", next.done + " из " + next.total + " заданий");
+    hintBox.classList.toggle("win", !!next.completed);
+    arcadeBtn.hidden = true;
+    document.title = next.completed ? "Тренажёр Linux пройден — Гелиос-7" : "Тренажёр Linux — Гелиос-7";
+  }
+
   function render(next) {
     state = next;
+    if (linuxMode) {
+      renderLinux(next);
+      promptEl.textContent = "analyst@linux:" + next.cwd + "$";
+      return;
+    }
     promptEl.textContent = promptText(next.cwd);
     hpText.textContent = next.hp + " / " + next.max_hp + " HP";
     hpTrack.replaceChildren();
@@ -1822,6 +2154,13 @@ auto_restart = false`
   }
 
   async function fetchState() {
+    if (linuxMode) {
+      if (localGame) return ensureLinuxGame().state();
+      const res = await request("/api/linux/state", {
+        headers: { "Accept": "application/json" }
+      });
+      return res.json();
+    }
     if (localGame) return localGame.state();
 
     const res = await request("/api/state", {
@@ -1831,6 +2170,15 @@ auto_restart = false`
   }
 
   async function send(command) {
+    if (linuxMode) {
+      if (localGame) return ensureLinuxGame().execute(command);
+      const res = await request("/api/linux/command", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ command: command })
+      });
+      return res.json();
+    }
     if (localGame) return localGame.execute(command);
 
     const res = await request("/api/command", {
@@ -1842,6 +2190,11 @@ auto_restart = false`
   }
 
   async function resetGame() {
+    if (linuxMode) {
+      if (localGame) return ensureLinuxGame().reset();
+      const res = await request("/api/linux/reset", { method: "POST" });
+      return res.json();
+    }
     if (localGame) return localGame.reset();
 
     const res = await request("/api/reset", { method: "POST" });
@@ -1948,6 +2301,43 @@ auto_restart = false`
     } finally {
       resetting = false;
       resetBtn.disabled = false;
+      input.disabled = false;
+      input.focus();
+    }
+  });
+
+  linuxBtn.addEventListener("click", async () => {
+    if (resetting || busy) return;
+    linuxMode = !linuxMode;
+    epoch++;
+    resetting = true;
+    linuxBtn.disabled = true;
+    input.disabled = true;
+    linuxPanel.hidden = !linuxMode;
+    linuxBtn.textContent = linuxMode
+      ? "◀ Вернуться к миссии «Гелиос-7»"
+      : "▶ Тренажёр Linux (10 заданий)";
+
+    if (arcadeAutoTimer) { clearTimeout(arcadeAutoTimer); arcadeAutoTimer = null; }
+    closeArcade();
+    if (!victoryOverlay.hidden) hideVictory();
+    if (!defeatOverlay.hidden) hideDefeat();
+
+    history = [];
+    historyPos = 0;
+    input.value = "";
+    clearTerminal();
+    append(linuxMode
+      ? "ТРЕНАЖЁР LINUX · 10 заданий для 10.02.05\nНабери help, чтобы увидеть команды."
+      : "ВЕРНУЛИСЬ К МИССИИ «ГЕЛИОС-7»");
+
+    try {
+      render(await fetchState());
+    } catch (err) {
+      hintEl.textContent = "Не удалось загрузить состояние: " + err.message;
+    } finally {
+      resetting = false;
+      linuxBtn.disabled = false;
       input.disabled = false;
       input.focus();
     }

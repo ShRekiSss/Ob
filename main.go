@@ -31,7 +31,7 @@ var assets embed.FS
 const (
 	sessionCookie  = "station_sid"
 	sessionTTL     = 24 * time.Hour
-	version        = "1.4.2"
+	version        = "1.5.0"
 	latestRelease  = "https://api.github.com/repos/ShRekiSss/Ob/releases/latest"
 	applyUpdateArg = "--apply-update"
 )
@@ -48,8 +48,9 @@ type server struct {
 }
 
 type sessionEntry struct {
-	sess *Session
-	seen time.Time
+	sess  *Session
+	linux *LinuxSession
+	seen  time.Time
 }
 
 func newServer() *server {
@@ -67,6 +68,9 @@ func (s *server) handler() http.Handler {
 	mux.HandleFunc("GET /api/health", s.handleHealth)
 	mux.HandleFunc("POST /api/command", s.handleCommand)
 	mux.HandleFunc("POST /api/reset", s.handleReset)
+	mux.HandleFunc("GET /api/linux/state", s.handleLinuxState)
+	mux.HandleFunc("POST /api/linux/command", s.handleLinuxCommand)
+	mux.HandleFunc("POST /api/linux/reset", s.handleLinuxReset)
 	return s.logRequests(mux)
 }
 
@@ -119,7 +123,7 @@ func (s *server) handleIndex(w http.ResponseWriter, r *http.Request) {
 
 func (s *server) handleState(w http.ResponseWriter, r *http.Request) {
 	sess := s.session(w, r)
-	writeJSON(w, http.StatusOK, sess.State())
+	writeJSON(w, http.StatusOK, sess.sess.State())
 }
 
 func (s *server) handleCommand(w http.ResponseWriter, r *http.Request) {
@@ -136,15 +140,37 @@ func (s *server) handleCommand(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sess := s.session(w, r)
-	writeJSON(w, http.StatusOK, sess.Execute(req.Command))
+	writeJSON(w, http.StatusOK, sess.sess.Execute(req.Command))
 }
 
 func (s *server) handleReset(w http.ResponseWriter, r *http.Request) {
 	sess := s.session(w, r)
-	writeJSON(w, http.StatusOK, sess.Reset())
+	writeJSON(w, http.StatusOK, sess.sess.Reset())
 }
 
-func (s *server) session(w http.ResponseWriter, r *http.Request) *Session {
+func (s *server) handleLinuxState(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, http.StatusOK, s.session(w, r).linux.State())
+}
+
+func (s *server) handleLinuxCommand(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Command string `json:"command"`
+	}
+	r.Body = http.MaxBytesReader(w, r.Body, 4096)
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{
+			"error": "некорректный запрос: ожидается JSON вида {\"command\": \"ls\"}",
+		})
+		return
+	}
+	writeJSON(w, http.StatusOK, s.session(w, r).linux.Execute(req.Command))
+}
+
+func (s *server) handleLinuxReset(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, http.StatusOK, s.session(w, r).linux.Reset())
+}
+
+func (s *server) session(w http.ResponseWriter, r *http.Request) *sessionEntry {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -154,7 +180,7 @@ func (s *server) session(w http.ResponseWriter, r *http.Request) *Session {
 		if entry, ok := s.sessions[cookie.Value]; ok && now.Sub(entry.seen) < s.ttl {
 			entry.seen = now
 			s.sessions[cookie.Value] = entry
-			return entry.sess
+			return &entry
 		}
 		delete(s.sessions, cookie.Value)
 	}
@@ -163,7 +189,7 @@ func (s *server) session(w http.ResponseWriter, r *http.Request) *Session {
 
 	id := randomID()
 	sess := NewSession()
-	s.sessions[id] = sessionEntry{sess: sess, seen: now}
+	s.sessions[id] = sessionEntry{sess: sess, linux: NewLinuxSession(), seen: now}
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     sessionCookie,
@@ -173,7 +199,7 @@ func (s *server) session(w http.ResponseWriter, r *http.Request) *Session {
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 	})
-	return sess
+	return &sessionEntry{sess: sess, linux: s.sessions[id].linux, seen: now}
 }
 
 // sweep удаляет сессии, к которым не обращались дольше ttl.

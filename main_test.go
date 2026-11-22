@@ -186,6 +186,34 @@ func TestHTTPClearAndUnicodeName(t *testing.T) {
 	}
 }
 
+func TestHTTPLinuxTrainerFlow(t *testing.T) {
+	srv := httptest.NewServer(newServer().handler())
+	defer srv.Close()
+	jar, _ := cookiejar.New(nil)
+	client := &http.Client{Jar: jar}
+
+	var state LinuxSnapshot
+	getJSON(t, client, srv.URL+"/api/linux/state", &state)
+	if state.Mission != 1 || state.Total != 10 {
+		t.Fatalf("начальное состояние тренажёра: %+v", state)
+	}
+
+	var res LinuxResult
+	postJSON(t, client, srv.URL+"/api/linux/command", map[string]string{"command": "whoami"}, &res)
+	if res.Output != "analyst" || res.State.Done != 0 {
+		t.Fatalf("whoami: %+v", res)
+	}
+	postJSON(t, client, srv.URL+"/api/linux/command", map[string]string{"command": "id"}, &res)
+	if res.State.Done != 1 || res.State.Score != 100 {
+		t.Fatalf("после id: %+v", res.State)
+	}
+
+	postJSON(t, client, srv.URL+"/api/linux/reset", nil, &state)
+	if state.Done != 0 || state.Score != 0 {
+		t.Fatalf("после сброса тренажёра: %+v", state)
+	}
+}
+
 func TestHTTPHealth(t *testing.T) {
 	srv := httptest.NewServer(newServer().handler())
 	defer srv.Close()

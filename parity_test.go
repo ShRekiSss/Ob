@@ -92,6 +92,23 @@ func TestOfflineNameLimitMatchesServer(t *testing.T) {
 	}
 }
 
+func TestOfflineLinuxTrainerMatchesServer(t *testing.T) {
+	page := pageHTML(t)
+	if !strings.Contains(page, "L_MISSIONS") || !strings.Contains(page, "ТРЕНАЖЁР LINUX") {
+		t.Fatal("в index.html нет офлайн-копии тренажёра Linux")
+	}
+	for _, m := range linuxMissions {
+		if !strings.Contains(page, `title:"`+m.Title+`"`) {
+			t.Errorf("в index.html нет задания %q", m.Title)
+		}
+	}
+	for _, api := range []string{"/api/linux/state", "/api/linux/command", "/api/linux/reset"} {
+		if !strings.Contains(page, api) {
+			t.Errorf("в index.html не используется %s", api)
+		}
+	}
+}
+
 // По образцу tools/check.js из ob-master: страница не должна содержать
 // ссылки на несуществующие id и несбалансированные теги.
 func TestHTMLStructure(t *testing.T) {
