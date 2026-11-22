@@ -751,12 +751,12 @@
   body {
     background: #d4d0c8 !important;
     color: #000;
-    font: 11px Tahoma, Verdana, sans-serif !important;
+    font: 13px Tahoma, Verdana, sans-serif !important;
   }
   body::after, .backdrop, .linux-panel::before { display: none !important; }
-  .app { width: 760px; max-width: 100%; gap: 8px; padding: 10px 0; }
+  .app { width: 960px; max-width: 100%; gap: 12px; padding: 16px 0; }
   .topbar {
-    padding: 6px 8px;
+    padding: 10px 14px;
     border: 1px solid #0a246a;
     border-radius: 0;
     background: linear-gradient(90deg, #0a246a, #a6caf0) !important;
@@ -767,27 +767,27 @@
   .sigil {
     width: auto; height: auto; border: 0; border-radius: 0;
     background: none; box-shadow: none; text-shadow: none;
-    font-size: 16px; color: #fff; animation: none;
+    font-size: 22px; color: #fff; animation: none;
   }
   h1 {
-    font: bold 14px Tahoma, sans-serif !important;
+    font: bold 18px Tahoma, sans-serif !important;
     color: #fff !important;
     background: none !important;
     -webkit-text-fill-color: #fff;
     letter-spacing: 0;
   }
-  .brand p { color: #dce6f2; font: 10px Tahoma, sans-serif; letter-spacing: 0; margin: 2px 0 0; text-transform: none; }
-  .boss { min-width: 190px; }
-  .boss-label { color: #000; font: 10px Tahoma, sans-serif; margin-bottom: 3px; }
+  .brand p { color: #dce6f2; font: 12px Tahoma, sans-serif; letter-spacing: 0; margin: 3px 0 0; text-transform: none; }
+  .boss { min-width: 260px; }
+  .boss-label { color: #000; font: 12px Tahoma, sans-serif; margin-bottom: 4px; }
   #hp-text { color: #0a246a; }
-  .hp-track { height: 8px; gap: 2px; }
+  .hp-track { height: 12px; gap: 3px; }
   .pip {
-    height: 8px; border: 1px solid #808080; border-radius: 0;
+    height: 12px; border: 1px solid #808080; border-radius: 0;
     background: #fff; transform: none; box-shadow: none;
   }
   .pip.on { border-color: #0a246a; background: #0a246a; box-shadow: none; }
   .terminal-wrap {
-    min-height: 300px;
+    min-height: 420px;
     border: 2px solid;
     border-color: #808080 #fff #fff #808080;
     border-radius: 0;
@@ -795,32 +795,32 @@
     -webkit-backdrop-filter: none; backdrop-filter: none;
     box-shadow: none;
   }
-  .terminal-bar { padding: 4px 6px; border-bottom: 1px solid #808080; background: #d4d0c8; }
-  .dot { width: 8px; height: 8px; border-radius: 0; background: #808080; }
+  .terminal-bar { padding: 6px 9px; border-bottom: 1px solid #808080; background: #d4d0c8; }
+  .dot { width: 10px; height: 10px; border-radius: 0; background: #808080; }
   .dot--red { background: #a00; }
   .dot--amber { background: #a80; }
-  .term-title { color: #000; font: 10px Tahoma, sans-serif; letter-spacing: 0; text-transform: none; }
+  .term-title { color: #000; font: 12px Tahoma, sans-serif; letter-spacing: 0; text-transform: none; }
   .term-title.glitch { color: #00f; text-shadow: none; }
   .terminal {
-    padding: 6px;
+    padding: 12px;
     color: #00ff00 !important;
-    font: 11px/1.35 "Courier New", monospace !important;
+    font: 14px/1.5 "Courier New", monospace !important;
     text-shadow: none;
   }
   .hint {
-    padding: 4px 6px;
+    padding: 8px 10px;
     border: 1px solid;
     border-color: #fff #808080 #808080 #fff;
     border-radius: 0;
     background: #ece9d8 !important;
     -webkit-backdrop-filter: none; backdrop-filter: none;
-    color: #000; font: 11px Tahoma, sans-serif;
+    color: #000; font: 13px Tahoma, sans-serif;
   }
-  .hint-label { color: #0a246a; font: bold 10px Tahoma, sans-serif; padding: 0; }
-  .hint p { font: 11px Tahoma, sans-serif; }
+  .hint-label { color: #0a246a; font: bold 12px Tahoma, sans-serif; padding: 0; }
+  .hint p { font: 13px/1.4 Tahoma, sans-serif; }
   .linux-panel {
     margin: 0;
-    padding: 5px 7px;
+    padding: 10px 14px;
     border: 1px solid;
     border-color: #fff #808080 #808080 #fff;
     border-radius: 0;
@@ -828,16 +828,17 @@
     box-shadow: none;
   }
   .linux-head {
-    font: bold 10px Tahoma, sans-serif; color: #0a246a;
-    border-bottom: 1px solid #aaa; padding: 0 0 3px; margin: 0 0 4px;
+    font: bold 12px Tahoma, sans-serif; color: #0a246a;
+    border-bottom: 1px solid #aaa; padding: 0 0 5px; margin: 0 0 7px;
     text-shadow: none;
   }
-  .linux-panel h3 { font: bold 11px Tahoma, sans-serif; color: #000; margin: 0 0 3px; }
-  .linux-panel p { font: 11px/1.3 Tahoma, sans-serif; margin: 0 0 3px; }
-  .linux-goal { background: #ffffe1; border: 1px solid #ccc; padding: 3px 5px; color: #000; }
-  .linux-meta { font: 10px Tahoma, sans-serif; color: #555; }
+  .linux-panel h3 { font: bold 15px Tahoma, sans-serif; color: #000; margin: 0 0 5px; }
+  .linux-panel p { font: 13px/1.45 Tahoma, sans-serif; margin: 0 0 5px; }
+  .linux-goal { background: #ffffe1; border: 1px solid #ccc; padding: 6px 9px; color: #000; font: 13px/1.45 Tahoma, sans-serif; }
+  .linux-cmd { font: bold 13px "Courier New", monospace; color: #0a246a; }
+  .linux-meta { font: 12px Tahoma, sans-serif; color: #555; }
   .command {
-    padding: 4px 6px;
+    padding: 8px 10px;
     border: 2px solid;
     border-color: #808080 #fff #fff #808080;
     border-radius: 0;
@@ -846,16 +847,16 @@
     box-shadow: none;
   }
   .command:focus-within { border-color: #0a246a; box-shadow: none; }
-  .prompt { color: #0a246a; font: 11px "Courier New", monospace; }
-  #input { font: 11px "Courier New", monospace; color: #000; caret-color: #000; }
+  .prompt { color: #0a246a; font: 13px "Courier New", monospace; }
+  #input { font: 13px "Courier New", monospace; color: #000; caret-color: #000; }
   #input::placeholder { color: #999; }
   .reset {
-    padding: 3px 8px;
+    padding: 6px 12px;
     border: 2px solid;
     border-color: #fff #808080 #808080 #fff;
-    border-radius: 0;
+    border-radius:0;
     background: #ece9d8 !important;
-    color: #000; font: 11px Tahoma, sans-serif;
+    color: #000; font: 13px Tahoma, sans-serif;
     box-shadow: none;
   }
   .reset:hover:not(:disabled) { background: #d4d0c8; color: #000; transform: none; box-shadow: none; }
@@ -878,7 +879,7 @@
       <span class="sigil" aria-hidden="true">◈</span>
       <div>
         <h1>ОТДЕЛ ИБ</h1>
-        <p>расследование инцидента · v1.6.2</p>
+        <p>расследование инцидента · v1.6.3</p>
       </div>
     </div>
     <div class="boss">
@@ -2265,9 +2266,24 @@ auto_restart = false`
   function renderLinux(next) {
     linuxTitle.textContent = next.completed ? "Все 10 заданий выполнены" : next.title;
     linuxBrief.textContent = next.brief;
-    linuxGoal.textContent = next.completed
-      ? "Итог: " + next.score + " очков. Набери reset, чтобы пройти заново."
-      : next.goal;
+    if (next.completed) {
+      linuxGoal.textContent = "Итог: " + next.score + " очков. Набери reset, чтобы пройти заново.";
+    } else {
+      // Команду выделяем моноширинным жирным, остальное — обычным текстом.
+      const parts = next.goal.split(" — ");
+      linuxGoal.replaceChildren();
+      if (parts.length > 1) {
+        const code = document.createElement("code");
+        code.className = "linux-cmd";
+        code.textContent = parts[0];
+        const desc = document.createElement("span");
+        desc.textContent = " — " + parts.slice(1).join(" — ");
+        linuxGoal.appendChild(code);
+        linuxGoal.appendChild(desc);
+      } else {
+        linuxGoal.textContent = next.goal;
+      }
+    }
     linuxProgress.textContent = "Задание " + Math.min(next.mission, next.total) +
       " / " + next.total + " · шаг " + next.step_done + "/" + next.step_total;
     linuxScore.textContent = next.score + " очков";
