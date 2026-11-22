@@ -208,6 +208,11 @@ func TestHTTPLinuxTrainerFlow(t *testing.T) {
 		t.Fatalf("после cat: %+v", res.State)
 	}
 
+	postJSON(t, client, srv.URL+"/api/linux/command", map[string]string{"command": "cat /station/secrets.txt"}, &res)
+	if !res.Scare || !strings.Contains(res.Output, "Совершенно секретно") {
+		t.Fatalf("секретный файл через API: %+v", res)
+	}
+
 	postJSON(t, client, srv.URL+"/api/linux/reset", nil, &state)
 	if state.Done != 0 || state.Score != 0 {
 		t.Fatalf("после сброса тренажёра: %+v", state)

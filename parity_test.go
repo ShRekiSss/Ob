@@ -111,6 +111,12 @@ func TestOfflineLinuxTrainerMatchesServer(t *testing.T) {
 			t.Errorf("в index.html не используется %s", api)
 		}
 	}
+	if !strings.Contains(page, "/station/secrets.txt") || !strings.Contains(page, "Совершенно секретно") {
+		t.Error("в index.html нет секретного файла или скримера")
+	}
+	if !strings.Contains(page, "data.scare") || !strings.Contains(page, "SCARE_GIF") {
+		t.Error("в index.html не подключён встроенный GIF-скример")
+	}
 }
 
 // По образцу tools/check.js из ob-master: страница не должна содержать

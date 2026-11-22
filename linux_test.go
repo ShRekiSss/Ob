@@ -72,6 +72,21 @@ func TestLinuxScoreAndHint(t *testing.T) {
 	}
 }
 
+func TestLinuxSecretFileScare(t *testing.T) {
+	s := NewLinuxSession()
+
+	res := s.Execute("cat /station/secrets.txt")
+	if !res.Scare || !strings.Contains(res.Output, "Совершенно секретно") {
+		t.Fatalf("секретный файл не сработал: %+v", res)
+	}
+	if next := s.Execute("ls /station"); next.Scare {
+		t.Fatal("флаг скримера не сбросился на следующей команде")
+	}
+	if _, ok := s.fs["/station/secrets.txt"]; !ok {
+		t.Fatal("secrets.txt отсутствует в виртуальной ФС")
+	}
+}
+
 func TestLinuxReset(t *testing.T) {
 	s := NewLinuxSession()
 	s.Execute("whoami")

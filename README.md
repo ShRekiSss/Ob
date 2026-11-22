@@ -293,6 +293,26 @@ API тренажёра Linux описан в разделе «Тренажёр L
 `/api/command`, `/api/reset` остались для совместимости и обслуживают
 прежнюю миссию «Гелиос-7».
 
+## Секретный файл и скример
+
+В `/station` лежит `secrets.txt`. Команда `cat /station/secrets.txt`
+(или `cd /station`, затем `cat secrets.txt`) открывает встроенный
+пиксельный GIF-скример — он зашит в `index.html` как data URI, поэтому
+работает и в exe, и из `file://`. Окно закрывается кнопкой или само через
+6 секунд. На прогресс это не влияет: задания и очки остаются
+прежними, файл просто скрытая находка для первокурсников.
+
+## Похожие проекты и что у них взято
+
+- [Bashcrawl](https://github.com/bamr87/bashcrawl) — проверка целей по мере ввода.
+- [Terminal Tactics](https://github.com/atahanrcys/terminal-tactics) — многоуровневые подсказки.
+- [Terminal Quest](https://github.com/dvrone/terminal-quest) — одна страница без зависимостей (как наш `go:embed`).
+- [Dungeons](https://github.com/Legedith/Dungeons) — настоящие побочные эффекты команд.
+- [Linux-Quest](https://github.com/v-schalla-oss/Linux-Quest) — журнал команд и прогресс студента.
+- [bandit-wargame](https://github.com/20100dbg/bandit-wargame) — лестница уровней для первокурсников.
+- [Linux Game](https://github.com/pablolucas890/linux-game) — локализация через словари.
+- [pentrAIn](https://github.com/maxk2222/pentrAIn) — экономика подсказок (−10 очков у нас).
+
 ## Как устроен бекенд
 
 - Один процесс на стандартной библиотеке Go: `net/http`, никаких фреймворков

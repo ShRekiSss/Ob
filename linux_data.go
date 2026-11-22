@@ -44,6 +44,10 @@ var linuxFSTemplate = map[string]linuxFile{
 	"/station":            {Dir: true},
 	"/station/brief.txt":  {Data: briefText, Mode: "644"},
 	"/station/events.log": {Data: eventsLog, Mode: "640"},
+	"/station/secrets.txt": {
+		Data: "Совершенно секретно. Если ты это читаешь — поздравляю, ты нашёл скрытый файл.\nНе говори никому, что здесь было。... или всё-таки скажи?",
+		Mode: "600",
+	},
 }
 
 var authLog = []string{

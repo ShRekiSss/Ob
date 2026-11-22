@@ -26,7 +26,8 @@ const ids = ['terminal','form','input','reset','prompt','hp-text','hp-track','hi
   'arcade-lives','arcade-ammo','arcade-reload-bar','arcade-reload','arcade-canvas',
   'victory-overlay','victory-name','victory-detail','victory-restart',
   'defeat-overlay','defeat-name','defeat-detail','defeat-retry','defeat-reset','defeat-close',
-  'linux-panel','linux-title','linux-brief','linux-goal','linux-progress','linux-score'];
+  'linux-panel','linux-title','linux-brief','linux-goal','linux-progress','linux-score',
+  'scare-overlay','scare-img','scare-close'];
 for (const id of ids) elements[id] = el(id);
 
 const document = {
@@ -48,7 +49,10 @@ const fetch = async (url, options = {}) => {
   calls.push({ url, method, body: options.body });
   let data = state;
   if (url.includes('/command')) {
-    data = { output: 'brief.txt\nevents.log', state: { ...state, done: 1, step_done: 1, score: 100 } };
+    const cmd = JSON.parse(options.body).command;
+    const scare = cmd.includes('secrets.txt');
+    data = { output: scare ? 'Совершенно секретно...' : 'brief.txt\nevents.log',
+      state: { ...state, done: 1, step_done: 1, score: 100 }, scare };
   }
   return { ok: true, status: 200, json: async () => data, body: { getReader() {} } };
 };
@@ -88,5 +92,14 @@ new Function('document', 'window', 'fetch', 'setTimeout', 'clearTimeout', 'setIn
   if (!calls.some(c => c.url === '/api/linux/reset')) throw new Error('кнопка сброса не вызвала API');
   if (!elements['terminal'].textContent.includes('миссия начата заново')) throw new Error('нет сообщения о сбросе');
 
-  console.log('OK UI clickability: form / history / reset button');
+  elements['input'].value = 'cat /station/secrets.txt';
+  await handlers['form:submit']({ preventDefault() {} });
+  await new Promise(r => setTimeout(r, 5));
+  if (elements['scare-overlay'].hidden) throw new Error('скример не показался');
+  if (!elements['scare-img'].src.startsWith('data:image/gif;base64,')) throw new Error('GIF не встроен');
+  if (!handlers['scare-close:click']) throw new Error('нет кнопки закрытия скримера');
+  handlers['scare-close:click']();
+  if (!elements['scare-overlay'].hidden) throw new Error('скример не закрылся');
+
+  console.log('OK UI clickability: form / history / reset / scare');
 })().catch(e => { console.error('FAIL UI:', e.message); process.exit(1); });

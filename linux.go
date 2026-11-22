@@ -24,6 +24,7 @@ type LinuxSession struct {
 	mistakes int
 	sshdUp   bool
 	finished bool
+	scare    bool
 }
 
 type LinuxSnapshot struct {
@@ -44,6 +45,7 @@ type LinuxSnapshot struct {
 type LinuxResult struct {
 	Output string        `json:"output"`
 	State  LinuxSnapshot `json:"state"`
+	Scare  bool          `json:"scare"`
 }
 
 func NewLinuxSession() *LinuxSession {
@@ -69,8 +71,9 @@ func NewLinuxSession() *LinuxSession {
 func (s *LinuxSession) Execute(line string) LinuxResult {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	s.scare = false
 	out := s.run(line)
-	return LinuxResult{Output: out, State: s.snapshot()}
+	return LinuxResult{Output: out, State: s.snapshot(), Scare: s.scare}
 }
 
 func (s *LinuxSession) State() LinuxSnapshot {
@@ -361,6 +364,9 @@ func (s *LinuxSession) cat(args []string) string {
 	}
 	if node.Dir {
 		return fmt.Sprintf("cat: %s: это каталог", args[0])
+	}
+	if target == "/station/secrets.txt" {
+		s.scare = true
 	}
 	return strings.TrimRight(node.Data, "\n")
 }

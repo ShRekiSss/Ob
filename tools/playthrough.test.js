@@ -3,7 +3,7 @@ const path = require('path');
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const src = html.split('<script>')[1].split('</script>')[0];
 const start = src.indexOf('// ── Тренажёр Linux');
-const end = src.indexOf('  function renderLinux', start);
+const end = src.indexOf('  function showScare', start);
 const code = src.slice(start, end) + '\nglobalThis.createLinuxGame = createLinuxGame;';
 eval(code);
 
@@ -23,6 +23,10 @@ const cmds = [
   ['sha256sum /var/log/auth.log'],
   ['tar -czf /srv/incident/evidence.tgz /var/log','systemctl restart sshd']
 ];
+const secret = g.execute('cat /station/secrets.txt');
+if (!secret.scare) throw new Error('секретный файл не включил скример');
+if (!secret.output.includes('Совершенно секретно')) throw new Error('секретный файл не прочитался');
+
 cmds.forEach((group, i) => {
   group.forEach(c => {
     const r = g.execute(c);
