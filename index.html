@@ -747,6 +747,120 @@
     .victory-card,
     .defeat-card { animation: none !important; }
   }
+  /* === Ретро-оформление 2000-х: компактно, как в Windows 2000/XP === */
+  body {
+    background: #d4d0c8 !important;
+    color: #000;
+    font: 11px Tahoma, Verdana, sans-serif !important;
+  }
+  body::after, .backdrop, .linux-panel::before { display: none !important; }
+  .app { width: 760px; max-width: 100%; gap: 8px; padding: 10px 0; }
+  .topbar {
+    padding: 6px 8px;
+    border: 1px solid #0a246a;
+    border-radius: 0;
+    background: linear-gradient(90deg, #0a246a, #a6caf0) !important;
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+    box-shadow: none; align-items: center;
+  }
+  .brand { gap: 8px; }
+  .sigil {
+    width: auto; height: auto; border: 0; border-radius: 0;
+    background: none; box-shadow: none; text-shadow: none;
+    font-size: 16px; color: #fff; animation: none;
+  }
+  h1 {
+    font: bold 14px Tahoma, sans-serif !important;
+    color: #fff !important;
+    background: none !important;
+    -webkit-text-fill-color: #fff;
+    letter-spacing: 0;
+  }
+  .brand p { color: #dce6f2; font: 10px Tahoma, sans-serif; letter-spacing: 0; margin: 2px 0 0; text-transform: none; }
+  .boss { min-width: 190px; }
+  .boss-label { color: #000; font: 10px Tahoma, sans-serif; margin-bottom: 3px; }
+  #hp-text { color: #0a246a; }
+  .hp-track { height: 8px; gap: 2px; }
+  .pip {
+    height: 8px; border: 1px solid #808080; border-radius: 0;
+    background: #fff; transform: none; box-shadow: none;
+  }
+  .pip.on { border-color: #0a246a; background: #0a246a; box-shadow: none; }
+  .terminal-wrap {
+    min-height: 300px;
+    border: 2px solid;
+    border-color: #808080 #fff #fff #808080;
+    border-radius: 0;
+    background: #000 !important;
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+    box-shadow: none;
+  }
+  .terminal-bar { padding: 4px 6px; border-bottom: 1px solid #808080; background: #d4d0c8; }
+  .dot { width: 8px; height: 8px; border-radius: 0; background: #808080; }
+  .dot--red { background: #a00; }
+  .dot--amber { background: #a80; }
+  .term-title { color: #000; font: 10px Tahoma, sans-serif; letter-spacing: 0; text-transform: none; }
+  .term-title.glitch { color: #00f; text-shadow: none; }
+  .terminal {
+    padding: 6px;
+    color: #00ff00 !important;
+    font: 11px/1.35 "Courier New", monospace !important;
+    text-shadow: none;
+  }
+  .hint {
+    padding: 4px 6px;
+    border: 1px solid;
+    border-color: #fff #808080 #808080 #fff;
+    border-radius: 0;
+    background: #ece9d8 !important;
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+    color: #000; font: 11px Tahoma, sans-serif;
+  }
+  .hint-label { color: #0a246a; font: bold 10px Tahoma, sans-serif; padding: 0; }
+  .hint p { font: 11px Tahoma, sans-serif; }
+  .linux-panel {
+    margin: 0;
+    padding: 5px 7px;
+    border: 1px solid;
+    border-color: #fff #808080 #808080 #fff;
+    border-radius: 0;
+    background: #ece9d8 !important;
+    box-shadow: none;
+  }
+  .linux-head {
+    font: bold 10px Tahoma, sans-serif; color: #0a246a;
+    border-bottom: 1px solid #aaa; padding: 0 0 3px; margin: 0 0 4px;
+    text-shadow: none;
+  }
+  .linux-panel h3 { font: bold 11px Tahoma, sans-serif; color: #000; margin: 0 0 3px; }
+  .linux-panel p { font: 11px/1.3 Tahoma, sans-serif; margin: 0 0 3px; }
+  .linux-goal { background: #ffffe1; border: 1px solid #ccc; padding: 3px 5px; color: #000; }
+  .linux-meta { font: 10px Tahoma, sans-serif; color: #555; }
+  .command {
+    padding: 4px 6px;
+    border: 2px solid;
+    border-color: #808080 #fff #fff #808080;
+    border-radius: 0;
+    background: #fff !important;
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+    box-shadow: none;
+  }
+  .command:focus-within { border-color: #0a246a; box-shadow: none; }
+  .prompt { color: #0a246a; font: 11px "Courier New", monospace; }
+  #input { font: 11px "Courier New", monospace; color: #000; caret-color: #000; }
+  #input::placeholder { color: #999; }
+  .reset {
+    padding: 3px 8px;
+    border: 2px solid;
+    border-color: #fff #808080 #808080 #fff;
+    border-radius: 0;
+    background: #ece9d8 !important;
+    color: #000; font: 11px Tahoma, sans-serif;
+    box-shadow: none;
+  }
+  .reset:hover:not(:disabled) { background: #d4d0c8; color: #000; transform: none; box-shadow: none; }
+  .victory-card, .defeat-card { border-radius: 0; font-family: Tahoma, sans-serif; }
+  @media (max-width: 640px) { .app { width: 100% !important; } }
 </style>
 </head>
 <body>
@@ -764,7 +878,7 @@
       <span class="sigil" aria-hidden="true">◈</span>
       <div>
         <h1>ОТДЕЛ ИБ</h1>
-        <p>расследование инцидента · v1.6.1</p>
+        <p>расследование инцидента · v1.6.2</p>
       </div>
     </div>
     <div class="boss">
@@ -1875,46 +1989,46 @@ auto_restart = false`
   // ── Тренажёр Linux для file:// (зеркало linux.go) ─────────────────────
   const L_MISSIONS = [
     { title:"1. Брифинг отдела ИБ", brief:"Тебя приняли стажёром в отдел ИБ. Начни с каталога /station.",
-      goal:"Разберись, что находится в каталоге /station.", hint:"ls ПУТЬ показывает содержимое каталога.",
+      goal:"ls /station — показывает файлы в каталоге /station.", hint:"ls ПУТЬ показывает содержимое каталога.",
       checks:[["ls","/station"]] },
     { title:"2. Бортовой журнал", brief:"Прочитай описание инцидента целиком.",
-      goal:"Прочитай описание инцидента в этом каталоге.", hint:"cat ФАЙЛ выводит содержимое файла.",
+      goal:"cat /station/brief.txt — читает файл brief.txt целиком.", hint:"cat ФАЙЛ выводит содержимое файла.",
       checks:[["cat","/station/brief.txt"]] },
     { title:"3. Маркер готовности", brief:"Найди в журнале строку с маркером READY.",
-      goal:"Найди в журнале отметку о готовности передатчика.", hint:"grep СЛОВО ФАЙЛ ищет подстроку.",
+      goal:"grep READY /station/events.log — ищет строку READY в журнале.", hint:"grep СЛОВО ФАЙЛ ищет подстроку.",
       checks:[["grep","READY","/station/events.log"]] },
     { title:"4. Кто я в системе", brief:"Узнай свою учётную запись и права.",
-      goal:"Узнай, под кем ты работаешь и какие у тебя права.", hint:"whoami — пользователь, id — UID/GID/группы.",
+      goal:"whoami — имя пользователя; id — UID, GID и группы.", hint:"whoami — пользователь, id — UID/GID/группы.",
       checks:[["whoami"],["id"]] },
     { title:"5. Скрытые файлы", brief:"В домашнем каталоге есть скрытая заметка.",
-      goal:"Найди скрытую заметку в домашнем каталоге и прочитай её.",
+      goal:"ls -la /home/analyst — скрытые файлы и права; cat /home/analyst/.notes — читает заметку.",
       hint:"-a показывает скрытые файлы, -l — права.",
       checks:[["ls","-la","/home/analyst"],["cat","/home/analyst/.notes"]] },
     { title:"6. Поиск логов", brief:"Найди все журналы под /var/log.",
-      goal:"Выясни, где хранятся журналы узла.", hint:"find ПУТЬ -name ШАБЛОН.",
+      goal:"find /var/log -name \"*.log\" — находит все файлы .log в /var/log.", hint:"find ПУТЬ -name ШАБЛОН.",
       checks:[["find","/var/log","-name","*.log"]] },
     { title:"7. Поиск атаки в журнале", brief:"Найди неудачные входы без учёта регистра.",
-      goal:"Найди следы неудачных попыток входа в журнале.", hint:"Флаг -i = регистронезависимый поиск.",
+      goal:"grep -i \"failed password\" /var/log/auth.log — ищет фразу без учёта регистра.", hint:"Флаг -i = регистронезависимый поиск.",
       checks:[["grep","-i","failed password","/var/log/auth.log"]] },
     { title:"8. Опасные права", brief:"Конфиг с паролем доступен всем на запись.",
-      goal:"Исправь опасные права на конфиге с секретом.", hint:"640 = владелец rw, группа r, остальные — ничего.",
+      goal:"chmod 640 /srv/incident/config.yml — владелец rw, группа r, остальные ничего.", hint:"640 = владелец rw, группа r, остальные — ничего.",
       checks:[["chmod","640","/srv/incident/config.yml"]] },
     { title:"9. Лишний процесс", brief:"В ps aux виден процесс с 98% CPU и майнинговым пулом.",
-      goal:"Найди и останови лишний процесс.", hint:"Найди PID в ps aux, потом kill <PID>.",
+      goal:"ps aux — список процессов; kill 1337 — завершить процесс 1337.", hint:"Найди PID в ps aux, потом kill <PID>.",
       checks:[["ps"],["kill","1337"]] },
     { title:"10. Подозрительный порт", brief:"Порт 4444 и тот же IP из логов. Закрой доступ.",
-      goal:"Найди подозрительный порт и закрой доступ с этого адреса.",
+      goal:"ss -tulpn — порты и программы; iptables -A INPUT -s 203.0.113.45 -j DROP — блокирует IP.",
       hint:"ss покажет порт, iptables -A INPUT -s IP -j DROP заблокирует адрес.",
       checks:[["ss","-tulpn"],["iptables","-A","INPUT","-s","203.0.113.45","-j","DROP"]] },
     { title:"11. Укрепление SSH", brief:"В sshd_config включён root-логин. Отключи его.",
-      goal:"Убери опасную настройку SSH и перезапусти службу.",
+      goal:"cat /etc/ssh/sshd_config — читает настройки; sed -i \"s/PermitRootLogin yes/PermitRootLogin no/\" /etc/ssh/sshd_config — меняет строку; systemctl restart sshd — перезапуск.",
       hint:"sed -i меняет файл на месте, после правки перезапусти службу.",
       checks:[["cat","/etc/ssh/sshd_config"],["sed","-i","PermitRootLogin yes","PermitRootLogin no","/etc/ssh/sshd_config"],["systemctl","restart","sshd"]] },
     { title:"12. Контроль целостности", brief:"Сверь журнал с эталонной суммой.",
-      goal:"Проверь целостность журнала по эталонной сумме.", hint:"Сравни вывод с /srv/incident/hashes.sha256.",
+      goal:"sha256sum /var/log/auth.log — считает хеш для проверки целостности.", hint:"Сравни вывод с /srv/incident/hashes.sha256.",
       checks:[["sha256sum","/var/log/auth.log"]] },
     { title:"13. Финал: доказательства", brief:"Упакуй логи и перезапусти службу.",
-      goal:"Собери доказательства и заверши расследование.",
+      goal:"tar -czf /srv/incident/evidence.tgz /var/log — архив логов; systemctl restart sshd — перезапуск.",
       hint:"tar -czf АРХИВ ПАПКА, затем systemctl restart sshd.",
       checks:[["tar","-czf","/srv/incident/evidence.tgz","/var/log"],["systemctl","restart","sshd"]] }
   ];

@@ -101,8 +101,9 @@ func TestOfflineLinuxTrainerMatchesServer(t *testing.T) {
 		if !strings.Contains(page, `title:"`+m.Title+`"`) {
 			t.Errorf("в index.html нет задания %q", m.Title)
 		}
-		if !strings.Contains(page, `goal:"`+m.Goal+`"`) {
-			t.Errorf("в index.html нет расплывчатой цели %q", m.Goal)
+		goal := strings.ReplaceAll(m.Goal, `"`, `\"`)
+		if !strings.Contains(page, `goal:"`+goal+`"`) {
+			t.Errorf("в index.html нет цели %q", goal)
 		}
 	}
 	for _, api := range []string{"/api/linux/state", "/api/linux/command", "/api/linux/reset"} {
