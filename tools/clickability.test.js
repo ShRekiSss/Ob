@@ -3,7 +3,9 @@
 const fs = require('fs');
 const path = require('path');
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-const src = html.split('<script>')[1].split('</script>')[0];
+let src = html.split('<script>')[1].split('</script>')[0];
+src = src.replace('hintEl.textContent = "Не удалось загрузить состояние. Перезагрузи страницу.";',
+                  'hintEl.textContent = "ERR:" + err.message;');
 
 const handlers = {};
 const calls = [];
@@ -71,7 +73,9 @@ new Function('document', 'window', 'fetch', 'setTimeout', 'clearTimeout', 'setIn
 
   if (!calls.some(c => c.url === '/api/linux/state')) throw new Error('не запрошено состояние тренажёра');
   if (elements['linux-panel'].hidden) throw new Error('панель заданий должна быть видна');
-  if (!elements['linux-title'].textContent.includes('Брифинг')) throw new Error('не отрисовано задание');
+  if (!elements['linux-title'].textContent.includes('Брифинг')) {
+    throw new Error('не отрисовано задание: title=' + JSON.stringify(elements['linux-title'].textContent) + ' hint=' + JSON.stringify(elements['hint'].textContent));
+  }
 
   if (!handlers['form:submit']) throw new Error('нет обработчика формы ввода');
   elements['input'].value = 'ls /station';

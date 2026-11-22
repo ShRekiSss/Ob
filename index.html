@@ -7,15 +7,15 @@
 <title>Гелиос-7 — восстанови связь</title>
 <style>
   :root {
-    --bg: #070b16;
-    --panel: #0d1424;
-    --line: #22304d;
-    --line-bright: #3c78b5;
-    --text: #dbe8ff;
-    --green: #5ce1e6;
-    --green-dim: #2f9aa8;
+    --bg: #05090a;
+    --panel: #08110f;
+    --line: #173029;
+    --line-bright: #2e6b55;
+    --text: #cfe9dd;
+    --green: #6ef2a4;
+    --green-dim: #4aa77a;
     --amber: #ffc857;
-    --muted: #8396b8;
+    --muted: #648178;
   }
 
   * { box-sizing: border-box; }
@@ -24,28 +24,9 @@
 
   body {
     margin: 0;
-    background:
-      radial-gradient(900px 500px at 12% -10%, rgba(60, 120, 181, .20), transparent 70%),
-      radial-gradient(700px 420px at 100% 0%, rgba(92, 225, 230, .10), transparent 70%),
-      var(--bg);
+    background: var(--bg);
     color: var(--text);
     font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  }
-
-  body::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: 2;
-    pointer-events: none;
-    background: repeating-linear-gradient(
-      to bottom,
-      rgba(255, 255, 255, .018) 0,
-      rgba(255, 255, 255, .018) 1px,
-      transparent 1px,
-      transparent 4px
-    );
-    mix-blend-mode: overlay;
   }
 
   /* Многослойный фон: туманности, звёзды, сетка и виньетка.
@@ -57,10 +38,10 @@
     overflow: hidden;
     pointer-events: none;
     background:
-      radial-gradient(1200px 800px at 12% -10%, rgba(60, 120, 181, .18), transparent 60%),
-      radial-gradient(900px 700px at 88% 108%, rgba(92, 225, 230, .10), transparent 62%),
-      radial-gradient(700px 520px at 50% 45%, rgba(255, 200, 87, .05), transparent 70%),
-      linear-gradient(180deg, #050914 0%, #070d1c 48%, #040711 100%);
+      radial-gradient(1200px 800px at 12% -10%, rgba(110, 242, 164, .12), transparent 60%),
+      radial-gradient(900px 700px at 88% 108%, rgba(255, 200, 87, .09), transparent 62%),
+      radial-gradient(700px 520px at 50% 45%, rgba(46, 120, 140, .10), transparent 70%),
+      linear-gradient(180deg, #03080a 0%, #050d0c 48%, #020605 100%);
   }
 
   .nebula {
@@ -76,7 +57,7 @@
   .nebula--a {
     top: -28vmax;
     left: -24vmax;
-    background: radial-gradient(circle, rgba(60, 140, 220, .30), transparent 65%);
+    background: radial-gradient(circle, rgba(52, 196, 132, .30), transparent 65%);
     animation: nebula-drift-a 30s ease-in-out infinite alternate;
   }
 
@@ -219,7 +200,7 @@
   .app {
     position: relative;
     z-index: 1;
-    width: min(100% - 32px, 1060px);
+    width: min(100% - 32px, 1000px);
     min-height: 100dvh;
     margin: 0 auto;
     padding: 22px 0 26px;
@@ -234,13 +215,6 @@
     justify-content: space-between;
     gap: 20px;
     flex-wrap: wrap;
-    padding: 16px 20px;
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    background: linear-gradient(135deg, rgba(15, 24, 44, .92), rgba(10, 16, 32, .78));
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
-    box-shadow: 0 18px 50px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(255, 255, 255, .05);
   }
 
   .brand {
@@ -250,18 +224,10 @@
   }
 
   .sigil {
-    display: grid;
-    place-items: center;
-    width: 46px;
-    height: 46px;
     color: var(--green);
-    font-size: 1.55rem;
+    font-size: 1.65rem;
     line-height: 1;
-    border: 1px solid rgba(92, 225, 230, .35);
-    border-radius: 12px;
-    background: rgba(92, 225, 230, .07);
-    text-shadow: 0 0 18px rgba(92, 225, 230, .7);
-    box-shadow: 0 0 24px rgba(92, 225, 230, .12);
+    text-shadow: 0 0 18px rgba(110, 242, 164, .65);
     animation: pulse 3.2s ease-in-out infinite;
   }
 
@@ -272,13 +238,9 @@
 
   h1 {
     margin: 0;
-    font-size: clamp(1.05rem, 2.4vw, 1.45rem);
-    font-weight: 700;
-    letter-spacing: .2em;
-    background: linear-gradient(90deg, #eaf6ff, var(--green));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    font-size: clamp(1.05rem, 2.4vw, 1.4rem);
+    letter-spacing: .22em;
+    color: #eafff4;
   }
 
   .brand p {
@@ -311,18 +273,17 @@
 
   .pip {
     flex: 1;
-    height: 10px;
-    border: 1px solid #2b3e60;
-    border-radius: 3px;
-    background: rgba(10, 18, 34, .9);
-    transform: skewX(-14deg);
+    border: 1px solid #2a473d;
+    border-radius: 2px;
+    background: #0a1512;
+    transform: skewX(-18deg);
     transition: background .25s, border-color .25s, box-shadow .25s;
   }
 
   .pip.on {
-    border-color: rgba(92, 225, 230, .8);
-    background: linear-gradient(180deg, #8ff5f2, #2ba9c9);
-    box-shadow: 0 0 12px rgba(92, 225, 230, .45);
+    border-color: #ffcf6b;
+    background: linear-gradient(180deg, #ffd77a, #f0a93c);
+    box-shadow: 0 0 10px rgba(255, 190, 80, .42);
   }
 
   .terminal-wrap {
@@ -332,14 +293,14 @@
     flex-direction: column;
     overflow: hidden;
     border: 1px solid var(--line);
-    border-radius: 14px;
-    background: rgba(8, 14, 28, .88);
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
+    border-radius: 10px;
+    background: rgba(6, 14, 12, .86);
+    -webkit-backdrop-filter: blur(7px);
+    backdrop-filter: blur(7px);
     box-shadow:
-      0 28px 90px rgba(0, 0, 0, .5),
-      0 0 70px rgba(60, 120, 181, .10),
-      inset 0 0 0 1px rgba(92, 225, 230, .04);
+      0 24px 90px rgba(0, 0, 0, .55),
+      0 0 60px rgba(46, 180, 120, .06),
+      inset 0 0 0 1px rgba(110, 242, 164, .035);
   }
 
   .terminal-bar {
@@ -383,12 +344,12 @@
     overflow: auto;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
-    color: #cfe4ff;
+    color: #a9e8c6;
     font: inherit;
     font-size: .88rem;
-    line-height: 1.6;
-    text-shadow: 0 0 12px rgba(92, 225, 230, .12);
-    scrollbar-color: #2b527e transparent;
+    line-height: 1.55;
+    text-shadow: 0 0 12px rgba(110, 242, 164, .14);
+    scrollbar-color: #244c3d transparent;
     scrollbar-width: thin;
   }
 
@@ -397,13 +358,12 @@
     align-items: flex-start;
     gap: 12px;
     padding: 10px 14px;
-    border: 1px solid var(--line);
-    border-left: 3px solid var(--green);
-    border-radius: 10px;
-    background: linear-gradient(90deg, rgba(27, 52, 86, .55), rgba(10, 17, 32, .35) 80%);
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
-    color: #b9d0f2;
+    border: 1px solid transparent;
+    border-left: 2px solid var(--line-bright);
+    background: linear-gradient(90deg, rgba(20, 48, 39, .62), rgba(6, 14, 12, .30) 80%);
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+    color: #9ec8b8;
     font-size: .82rem;
     line-height: 1.5;
     transition: border-color .25s, color .25s;
@@ -426,64 +386,25 @@
 
   .hint p { margin: 0; }
 
-  .linux-panel {
-    position: relative;
-    margin: 2px 0 0;
-    padding: 16px 18px;
-    border: 1px solid rgba(92, 225, 230, .28);
-    border-radius: 14px;
-    background:
-      radial-gradient(500px 160px at 0% 0%, rgba(92, 225, 230, .10), transparent 70%),
-      linear-gradient(180deg, rgba(16, 27, 48, .96), rgba(9, 15, 30, .92));
-    box-shadow: 0 18px 46px rgba(0, 0, 0, .32), inset 0 1px 0 rgba(255, 255, 255, .05);
-    overflow: hidden;
-  }
-  .linux-panel::before {
-    content: "";
-    position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 3px;
-    background: linear-gradient(180deg, var(--green), var(--amber));
-  }
-  .linux-panel[hidden] { display: none; }
-  .linux-head {
-    font-size: 10px; letter-spacing: .17em; color: var(--green);
-    border-bottom: 1px solid var(--line); padding-bottom: 8px; margin-bottom: 11px;
-    text-shadow: 0 0 10px rgba(92, 225, 230, .35);
-  }
-  .linux-panel h3 { margin: 0 0 6px; font-size: 16px; color: var(--amber); letter-spacing: .02em; }
-  .linux-panel p { margin: 0 0 7px; font-size: 12.5px; line-height: 1.55; }
-  .linux-goal {
-    color: var(--green);
-    padding: 7px 10px;
-    border-left: 2px solid var(--green);
-    border-radius: 0 6px 6px 0;
-    background: rgba(92, 225, 230, .07);
-  }
-  .linux-meta { color: var(--muted); font-size: 11px; letter-spacing: .06em; }
-  .mode-switch { display: flex; gap: 8px; flex-wrap: wrap; }
-  .mode-switch .arcade-launch { margin-top: 0; }
-
   .command {
     display: flex;
     align-items: center;
     gap: 10px;
     padding: 10px 12px;
     border: 1px solid var(--line);
-    border-radius: 12px;
-    background: rgba(11, 19, 36, .88);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05), 0 10px 30px rgba(0, 0, 0, .25);
+    border-radius: 8px;
+    background: rgba(8, 17, 15, .82);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .03);
     transition: border-color .2s, box-shadow .2s;
   }
 
   .command:focus-within {
-    border-color: rgba(92, 225, 230, .6);
+    border-color: var(--line-bright);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, .05),
-      0 0 0 3px rgba(92, 225, 230, .10),
-      0 0 24px rgba(92, 225, 230, .12);
+      inset 0 1px 0 rgba(255, 255, 255, .03),
+      0 0 0 3px rgba(110, 242, 164, .07);
   }
 
   .prompt {
@@ -509,26 +430,23 @@
   #input:disabled { opacity: .55; }
 
   .reset {
-    padding: 9px 14px;
-    border: 1px solid rgba(92, 225, 230, .35);
-    border-radius: 8px;
-    background: linear-gradient(180deg, rgba(92, 225, 230, .14), rgba(92, 225, 230, .05));
-    color: #c9f7f5;
+    padding: 8px 11px;
+    border: 1px solid #3a4d46;
+    border-radius: 5px;
+    background: #111d19;
+    color: #9bb8ad;
     font: inherit;
-    font-size: .7rem;
-    font-weight: 700;
+    font-size: .68rem;
     letter-spacing: .07em;
     white-space: nowrap;
     cursor: pointer;
-    transition: transform .15s, border-color .2s, color .2s, background .2s, box-shadow .2s;
+    transition: border-color .2s, color .2s, background .2s;
   }
 
   .reset:hover:not(:disabled) {
     border-color: var(--amber);
-    background: linear-gradient(180deg, rgba(255, 200, 87, .18), rgba(255, 200, 87, .06));
+    background: #1a2116;
     color: #ffd77a;
-    box-shadow: 0 0 18px rgba(255, 200, 87, .18);
-    transform: translateY(-1px);
   }
 
   .reset:disabled { opacity: .5; cursor: wait; }
@@ -747,143 +665,52 @@
     .victory-card,
     .defeat-card { animation: none !important; }
   }
-  /* === Ретро-оформление 2000-х: компактно, как в Windows 2000/XP === */
-  body {
-    background: #d4d0c8 !important;
-    color: #000;
-    font: 13px Tahoma, Verdana, sans-serif !important;
-  }
-  body::after, .backdrop, .linux-panel::before { display: none !important; }
-  .app { width: 960px; max-width: 100%; gap: 12px; padding: 16px 0; }
-  .topbar {
-    padding: 10px 14px;
-    border: 1px solid #0a246a;
-    border-radius: 0;
-    background: linear-gradient(90deg, #0a246a, #a6caf0) !important;
-    -webkit-backdrop-filter: none; backdrop-filter: none;
-    box-shadow: none; align-items: center;
-  }
-  .brand { gap: 8px; }
-  .sigil {
-    width: auto; height: auto; border: 0; border-radius: 0;
-    background: none; box-shadow: none; text-shadow: none;
-    font-size: 22px; color: #fff; animation: none;
-  }
-  h1 {
-    font: bold 18px Tahoma, sans-serif !important;
-    color: #fff !important;
-    background: none !important;
-    -webkit-text-fill-color: #fff;
-    letter-spacing: 0;
-  }
-  .brand p { color: #dce6f2; font: 12px Tahoma, sans-serif; letter-spacing: 0; margin: 3px 0 0; text-transform: none; }
-  .boss { min-width: 260px; }
-  .boss-label { color: #000; font: 12px Tahoma, sans-serif; margin-bottom: 4px; }
-  #hp-text { color: #0a246a; }
-  .hp-track { height: 12px; gap: 3px; }
-  .pip {
-    height: 12px; border: 1px solid #808080; border-radius: 0;
-    background: #fff; transform: none; box-shadow: none;
-  }
-  .pip.on { border-color: #0a246a; background: #0a246a; box-shadow: none; }
-  .terminal-wrap {
-    min-height: 420px;
-    border: 2px solid;
-    border-color: #808080 #fff #fff #808080;
-    border-radius: 0;
-    background: #000 !important;
-    -webkit-backdrop-filter: none; backdrop-filter: none;
-    box-shadow: none;
-  }
-  .terminal-bar { padding: 6px 9px; border-bottom: 1px solid #808080; background: #d4d0c8; }
-  .dot { width: 10px; height: 10px; border-radius: 0; background: #808080; }
-  .dot--red { background: #a00; }
-  .dot--amber { background: #a80; }
-  .term-title { color: #000; font: 12px Tahoma, sans-serif; letter-spacing: 0; text-transform: none; }
-  .term-title.glitch { color: #00f; text-shadow: none; }
-  .terminal {
-    padding: 12px;
-    color: #00ff00 !important;
-    font: 14px/1.5 "Courier New", monospace !important;
-    text-shadow: none;
-  }
-  .hint {
-    padding: 8px 10px;
-    border: 1px solid;
-    border-color: #fff #808080 #808080 #fff;
-    border-radius: 0;
-    background: #ece9d8 !important;
-    -webkit-backdrop-filter: none; backdrop-filter: none;
-    color: #000; font: 13px Tahoma, sans-serif;
-  }
-  .hint-label { color: #0a246a; font: bold 12px Tahoma, sans-serif; padding: 0; }
-  .hint p { font: 13px/1.4 Tahoma, sans-serif; }
+
+  /* === Панель заданий отдела ИБ и скример (в стиле v1.4) === */
   .linux-panel {
-    margin: 0;
-    padding: 10px 14px;
-    border: 1px solid;
-    border-color: #fff #808080 #808080 #fff;
-    border-radius: 0;
-    background: #ece9d8 !important;
-    box-shadow: none;
+    margin: 10px 0 0;
+    padding: 12px 14px;
+    border: 1px solid var(--line-bright);
+    border-radius: 8px;
+    background: linear-gradient(180deg, rgba(16, 40, 32, .92), rgba(6, 14, 12, .82));
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(110, 242, 164, .05);
   }
+  .linux-panel[hidden] { display: none; }
   .linux-head {
-    font: bold 12px Tahoma, sans-serif; color: #0a246a;
-    border-bottom: 1px solid #aaa; padding: 0 0 5px; margin: 0 0 7px;
-    text-shadow: none;
+    font-size: 11px; letter-spacing: .14em; color: var(--green);
+    border-bottom: 1px solid var(--line); padding-bottom: 6px; margin-bottom: 8px;
   }
-  .linux-panel h3 { font: bold 15px Tahoma, sans-serif; color: #000; margin: 0 0 5px; }
-  .linux-panel p { font: 13px/1.45 Tahoma, sans-serif; margin: 0 0 5px; }
-  .linux-goal { background: #ffffe1; border: 1px solid #ccc; padding: 6px 9px; color: #000; font: 13px/1.45 Tahoma, sans-serif; }
-  .linux-cmd { font: bold 13px "Courier New", monospace; color: #0a246a; }
-  .linux-meta { font: 12px Tahoma, sans-serif; color: #555; }
-  .command {
-    padding: 8px 10px;
-    border: 2px solid;
-    border-color: #808080 #fff #fff #808080;
-    border-radius: 0;
-    background: #fff !important;
-    -webkit-backdrop-filter: none; backdrop-filter: none;
-    box-shadow: none;
+  .linux-panel h3 { margin: 0 0 5px; font-size: 15px; color: var(--amber); }
+  .linux-panel p { margin: 0 0 6px; font-size: 13px; line-height: 1.5; }
+  .linux-goal {
+    color: var(--green);
+    padding: 6px 9px;
+    border-left: 2px solid var(--green);
+    border-radius: 0 5px 5px 0;
+    background: rgba(110, 242, 164, .07);
   }
-  .command:focus-within { border-color: #0a246a; box-shadow: none; }
-  .prompt { color: #0a246a; font: 13px "Courier New", monospace; }
-  #input { font: 13px "Courier New", monospace; color: #000; caret-color: #000; }
-  #input::placeholder { color: #999; }
-  .reset {
-    padding: 6px 12px;
-    border: 2px solid;
-    border-color: #fff #808080 #808080 #fff;
-    border-radius:0;
-    background: #ece9d8 !important;
-    color: #000; font: 13px Tahoma, sans-serif;
-    box-shadow: none;
-  }
-  .reset:hover:not(:disabled) { background: #d4d0c8; color: #000; transform: none; box-shadow: none; }
-  .victory-card, .defeat-card { border-radius: 0; font-family: Tahoma, sans-serif; }
-  @media (max-width: 640px) { .app { width: 100% !important; } }
+  .linux-cmd { font-weight: 700; color: var(--amber); }
+  .linux-meta { color: var(--muted); font-size: 11px; }
 
   .scare-overlay {
     position: fixed; inset: 0; z-index: 999;
-    display: grid; place-items: center;
-    background: #000;
+    display: grid; place-items: center; background: #000;
   }
   .scare-overlay[hidden] { display: none; }
   .scare-overlay img {
     width: 100vw; height: 100vh;
-    object-fit: cover;
-    image-rendering: pixelated;
+    object-fit: cover; image-rendering: pixelated;
   }
   .scare-close {
     position: absolute; right: 12px; bottom: 12px;
     padding: 6px 14px;
-    border: 2px solid; border-color: #fff #808080 #808080 #fff;
-    border-radius: 0;
-    background: #ece9d8; color: #000;
-    font: bold 12px Tahoma, sans-serif;
+    border: 1px solid var(--green);
+    border-radius: 4px;
+    background: #08110f; color: var(--green);
+    font: 12px "Courier New", monospace;
     cursor: pointer;
   }
-  .scare-close:hover { background: #d4d0c8; }
+  .scare-close:hover { background: #0d201a; }
 </style>
 </head>
 <body>
@@ -901,7 +728,7 @@
       <span class="sigil" aria-hidden="true">◈</span>
       <div>
         <h1>ОТДЕЛ ИБ</h1>
-        <p>расследование инцидента · v1.7.0</p>
+        <p>расследование инцидента · v1.7.1</p>
       </div>
     </div>
     <div class="boss">
@@ -936,12 +763,8 @@
     <p class="linux-meta"><span id="linux-progress"></span> · <span id="linux-score"></span></p>
   </div>
 
-  <div class="mode-switch">
-    <button class="arcade-launch" id="arcade-btn" type="button" hidden>▶ Мини-игра: защити канал</button>
-  </div>
-
   <form class="command" id="form" autocomplete="off">
-    <label class="prompt" id="prompt" for="input">cadet@helio-7:/$</label>
+    <label class="prompt" id="prompt" for="input">analyst@linux:/home/analyst$</label>
     <input id="input" name="command" type="text" spellcheck="false" maxlength="200"
            autocapitalize="off" autocomplete="off" placeholder="введи команду…"
            aria-label="Команда" autofocus>
@@ -952,51 +775,6 @@
 <div class="scare-overlay" id="scare-overlay" hidden>
   <img id="scare-img" src="" alt="Скример: пиксельный маньяк">
   <button class="scare-close" id="scare-close" type="button">Закрыть</button>
-</div>
-
-<div class="arcade-overlay" id="arcade-overlay" hidden>
-  <div class="arcade-panel">
-    <div class="arcade-head">
-      <span>ЗАЩИТА КАНАЛА · МИНИ-ИГРА</span>
-      <button class="arcade-close" id="arcade-close" type="button" aria-label="Закрыть мини-игру">×</button>
-    </div>
-    <p class="arcade-tip">
-      ← → или A/D — движение кораблика · Пробел или клик — стрельба ·
-      R — перезарядка · сбивай метеориты, береги 3 сердца
-    </p>
-    <canvas id="arcade-canvas" width="720" height="420" aria-label="Мини-игра: защита канала"></canvas>
-    <div class="arcade-stats">
-      <span id="arcade-kills">Сбито: 0 / 10</span>
-      <span id="arcade-ammo">Патроны: 6 / 6</span>
-      <span class="reload-bar" id="arcade-reload-bar" aria-hidden="true"><i></i></span>
-      <button id="arcade-reload" type="button">Перезарядка (R)</button>
-      <span id="arcade-lives">♥ ♥ ♥</span>
-      <button id="arcade-restart" type="button">Заново</button>
-    </div>
-  </div>
-</div>
-
-<div class="victory-overlay" id="victory-overlay" hidden>
-  <div class="victory-card">
-    <h2>ТЫ ПОБЕДИЛ</h2>
-    <p class="final-name" id="victory-name">КАДЕТ</p>
-    <p id="victory-detail">Связь восстановлена, канал защищён.</p>
-    <button id="victory-restart" type="button">Сыграть ещё раз</button>
-  </div>
-</div>
-
-<div class="defeat-overlay" id="defeat-overlay" hidden>
-  <div class="victory-card defeat-card">
-    <div class="defeat-emoji" aria-hidden="true">👎</div>
-    <h2>ТЫ ПРОИГРАЛ</h2>
-    <p class="final-name" id="defeat-name">КАДЕТ</p>
-    <p id="defeat-detail"></p>
-    <div class="defeat-buttons">
-      <button id="defeat-retry" type="button">Ещё раз</button>
-      <button id="defeat-reset" type="button">Сбросить миссию</button>
-      <button id="defeat-close" type="button">Закрыть сайт</button>
-    </div>
-  </div>
 </div>
 
 <script>
@@ -1038,27 +816,12 @@
       channelLabel.classList.toggle("glitch", channel === 6);
     }, 900);
   }
-  const arcadeBtn = document.getElementById("arcade-btn");
-  const arcadeOverlay = document.getElementById("arcade-overlay");
-  const arcadeClose = document.getElementById("arcade-close");
-  const arcadeRestart = document.getElementById("arcade-restart");
-  const arcadeKills = document.getElementById("arcade-kills");
-  const arcadeLives = document.getElementById("arcade-lives");
-  const arcadeAmmo = document.getElementById("arcade-ammo");
-  const arcadeReloadBar = document.getElementById("arcade-reload-bar").firstElementChild;
-  const arcadeReloadBtn = document.getElementById("arcade-reload");
-  const canvas = document.getElementById("arcade-canvas");
-  const ctx = canvas.getContext("2d");
-  const victoryOverlay = document.getElementById("victory-overlay");
-  const victoryName = document.getElementById("victory-name");
-  const victoryDetail = document.getElementById("victory-detail");
-  const victoryRestart = document.getElementById("victory-restart");
-  const defeatOverlay = document.getElementById("defeat-overlay");
-  const defeatName = document.getElementById("defeat-name");
-  const defeatDetail = document.getElementById("defeat-detail");
-  const defeatRetry = document.getElementById("defeat-retry");
-  const defeatReset = document.getElementById("defeat-reset");
-  const defeatClose = document.getElementById("defeat-close");
+  let state = null;
+  let epoch = 0;
+  let history = [];
+  let historyPos = 0;
+  let busy = false;
+  let resetting = false;
 
   const BANNER = [
     "╔════════════════════════════════════════════╗",
@@ -1104,9 +867,6 @@
     "Подсказка под полем ввода всегда говорит, что делать сейчас.",
     "Кнопка «Начать заново» очищает экран и сбрасывает прогресс.",
     "",
-    "После победы автоматически запускается мини-игра «Защита канала»:",
-    "10 метеоритов и 5 кораблей пришельцев. Корабли стреляют красным лучом.",
-    "R — перезарядка. В финале появятся имя кадета и найденный гаджет."
   ].join("\n");
 
   // При открытии через file:// сервер недоступен, поэтому включается
@@ -1363,648 +1123,6 @@ auto_restart = false`
   function cadetLabel() {
     return ((state && state.name) || "Кадет").trim() || "Кадет";
   }
-
-  // ── Мини-игра «Защита канала» ─────────────────────────────────────────
-  // Полностью на клиенте: одинаково работает через HTTP, из file:// и в exe.
-  const METEOR_GOAL = 10;
-  const SHIP_GOAL = 5;
-  const ARCADE_TARGET = METEOR_GOAL + SHIP_GOAL;
-  const ARCADE_W = canvas.width;
-  const ARCADE_H = canvas.height;
-  const arcadeKeys = { left: false, right: false, fire: false };
-  let arcade = null;
-  let arcadeAutoTimer = null;
-  let arcadeHideTimer = null;
-  let arcadeFinishTimer = null;
-
-  const arcadeStars = Array.from({ length: 70 }, (_, i) => ({
-    x: (i * 137.51) % ARCADE_W,
-    y: (i * 71.37) % ARCADE_H,
-    r: i % 7 === 0 ? 1.5 : 0.9,
-    a: 0.2 + (i % 5) * 0.12
-  }));
-
-  const ARCADE_MAGAZINE = 6;
-  const ARCADE_RELOAD_TIME = 1.4;
-
-  function arcadeUpdateAmmo() {
-    if (!arcade) return;
-    if (arcade.reloading) {
-      const pct = Math.round((1 - arcade.reloadTimer / ARCADE_RELOAD_TIME) * 100);
-      arcadeAmmo.textContent = "Перезарядка… " + pct + "%";
-      arcadeReloadBar.style.width = pct + "%";
-    } else {
-      arcadeAmmo.textContent = "Патроны: " + arcade.ammo + " / " + ARCADE_MAGAZINE;
-      arcadeReloadBar.style.width = (arcade.ammo / ARCADE_MAGAZINE * 100) + "%";
-    }
-  }
-
-  function arcadeUpdateKills() {
-    if (!arcade) return;
-    arcadeKills.textContent =
-      "Враги: " + (arcade.meteorsKilled + arcade.shipsKilled) + " / " + ARCADE_TARGET +
-      " · метеоры " + arcade.meteorsKilled + "/" + METEOR_GOAL +
-      " · корабли " + arcade.shipsKilled + "/" + SHIP_GOAL;
-  }
-
-  function arcadeStartReload() {
-    if (!arcade || arcade.over || arcade.reloading || arcade.ammo >= ARCADE_MAGAZINE) return;
-    arcade.reloading = true;
-    arcade.reloadTimer = ARCADE_RELOAD_TIME;
-    arcadeUpdateAmmo();
-  }
-
-  function arcadeReset() {
-    arcade = {
-      ship: { x: ARCADE_W / 2, y: ARCADE_H - 44 },
-      bullets: [], enemyBullets: [], meteors: [], aliens: [], particles: [],
-      kills: 0, meteorsKilled: 0, shipsKilled: 0,
-      lives: 3, spawn: 0.6, alienTimer: 1.6, cooldown: 0,
-      ammo: 6, reloading: false, reloadTimer: 0,
-      last: 0, raf: 0, over: false
-    };
-    arcadeUpdateKills();
-    arcadeLives.textContent = "♥ ♥ ♥";
-    arcadeUpdateAmmo();
-  }
-
-  function arcadeSpawnMeteor() {
-    const r = 12 + Math.random() * 12;
-    arcade.meteors.push({
-      x: r + Math.random() * (ARCADE_W - 2 * r),
-      y: -r - 8,
-      r: r,
-      speed: 80 + Math.random() * 60 + arcade.kills * 2,
-      drift: (Math.random() - 0.5) * 40,
-      tilt: Math.random() * Math.PI,
-      spin: (Math.random() - 0.5) * 2,
-      seed: Math.random() * 100
-    });
-  }
-
-  function arcadeSpawnAlien() {
-    arcade.aliens.push({
-      x: 70 + Math.random() * (ARCADE_W - 140),
-      y: 52 + Math.random() * 78,
-      hp: 1,
-      drift: (Math.random() < 0.5 ? -1 : 1) * (18 + Math.random() * 22),
-      fire: 2.0 + Math.random() * 1.2,
-      phase: Math.random() * 6,
-      dead: false
-    });
-  }
-
-  function arcadeAlienFire(alien) {
-    const dx = arcade.ship.x - alien.x;
-    const dy = arcade.ship.y - alien.y;
-    const base = Math.atan2(dy, dx) + (Math.random() - 0.5) * 0.5;
-    arcade.enemyBullets.push({
-      x: alien.x, y: alien.y + 12,
-      vx: Math.cos(base) * 170, vy: Math.sin(base) * 170,
-      life: 3,
-      trail: [{ x: alien.x, y: alien.y + 12 }]
-    });
-  }
-
-  function arcadeFire() {
-    if (!arcade || arcade.over || arcade.reloading || arcade.ammo <= 0) return;
-    // Сначала сбиваем инопланетные корабли (они стреляют в ответ),
-    // потом берём самый опасный метеорит.
-    let target = arcade.aliens.find(a => !a.dead) || null;
-    if (!target) {
-      let bestY = -Infinity;
-      for (const m of arcade.meteors) {
-        if (m.y < 0) continue;
-        if (m.y > bestY) { bestY = m.y; target = m; }
-      }
-    }
-    let dx = 0;
-    let dy = -1;
-    if (target) {
-      // Стреляем с упреждением: метеорит успевает сдвинуться за время полёта.
-      const dist = Math.hypot(target.x - arcade.ship.x, target.y - arcade.ship.y) || 1;
-      const flight = dist / 520;
-      // У метеоритов есть скорость падения, у кораблей — только дрейф.
-      const isMeteor = target.speed !== undefined;
-      const tx = target.x + (isMeteor ? target.drift * flight : 0);
-      const ty = target.y + (isMeteor ? target.speed * flight : 0);
-      const len = Math.hypot(tx - arcade.ship.x, ty - arcade.ship.y) || 1;
-      dx = (tx - arcade.ship.x) / len;
-      dy = (ty - arcade.ship.y) / len;
-    }
-    arcade.bullets.push({
-      x: arcade.ship.x, y: arcade.ship.y - 18,
-      vx: dx * 520, vy: dy * 520, life: 1.5,
-      target: target,
-      trail: [{ x: arcade.ship.x, y: arcade.ship.y - 18 }]
-    });
-    arcade.ammo--;
-    if (arcade.ammo <= 0) arcadeStartReload();
-    arcadeUpdateAmmo();
-  }
-
-  function arcadeHit() {
-    const g = arcade;
-    g.lives--;
-    arcadeLives.textContent = "♥ ".repeat(Math.max(0, g.lives)).trim() || "—";
-    if (g.lives <= 0) {
-      g.over = true;
-      arcadeKills.textContent = "Кораблик повреждён";
-      arcadeLose();
-    }
-  }
-
-  function segmentHitsCircle(x1, y1, x2, y2, cx, cy, r) {
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    const len2 = dx * dx + dy * dy;
-    let t = len2 ? ((cx - x1) * dx + (cy - y1) * dy) / len2 : 0;
-    t = Math.max(0, Math.min(1, t));
-    return Math.hypot(cx - (x1 + t * dx), cy - (y1 + t * dy)) <= r;
-  }
-
-  function arcadeStep(dt) {
-    const g = arcade;
-    if (!g || g.over) return;
-
-    if (g.reloading) {
-      g.reloadTimer -= dt;
-      if (g.reloadTimer <= 0) {
-        g.reloading = false;
-        g.reloadTimer = 0;
-        g.ammo = ARCADE_MAGAZINE;
-      }
-      arcadeUpdateAmmo();
-    }
-
-    const dir = Number(arcadeKeys.right) - Number(arcadeKeys.left);
-    g.ship.x = Math.max(24, Math.min(ARCADE_W - 24, g.ship.x + dir * 280 * dt));
-
-    g.cooldown -= dt;
-    if (arcadeKeys.fire && !g.reloading && g.ammo > 0 && g.cooldown <= 0) {
-      arcadeFire();
-      g.cooldown = 0.13;
-    }
-
-    g.spawn -= dt;
-    if (g.spawn <= 0) {
-      if (g.meteorsKilled < METEOR_GOAL && g.meteors.length < 3) arcadeSpawnMeteor();
-      g.spawn = Math.max(0.5, 0.9 - g.kills * 0.02);
-    }
-
-    g.alienTimer -= dt;
-    if (g.alienTimer <= 0) {
-      if (g.shipsKilled < SHIP_GOAL && g.aliens.length < 1) arcadeSpawnAlien();
-      g.alienTimer = 3.4;
-    }
-
-    for (const a of g.aliens) {
-      a.phase += dt;
-      a.x += a.drift * dt;
-      if (a.x < 40 || a.x > ARCADE_W - 40) {
-        a.drift *= -1;
-        a.x = Math.max(40, Math.min(ARCADE_W - 40, a.x));
-      }
-      a.fire -= dt;
-      if (a.fire <= 0 && !a.dead) {
-        arcadeAlienFire(a);
-        a.fire = 3.6 + Math.random() * 0.9;
-      }
-    }
-
-    for (const b of g.bullets) {
-      const px = b.x;
-      const py = b.y;
-
-      // Самонаведение: пуля разворачивается к цели, поэтому летит
-      // по видимой траектории и не уходит «не туда».
-      if (b.target && !b.target.dead) {
-        const desired = Math.atan2(b.target.y - b.y, b.target.x - b.x);
-        const current = Math.atan2(b.vy, b.vx);
-        let diff = desired - current;
-        while (diff > Math.PI) diff -= 2 * Math.PI;
-        while (diff < -Math.PI) diff += 2 * Math.PI;
-        const turn = Math.max(-7 * dt, Math.min(7 * dt, diff));
-        const speed = Math.hypot(b.vx, b.vy);
-        b.vx = Math.cos(current + turn) * speed;
-        b.vy = Math.sin(current + turn) * speed;
-      }
-
-      b.x += b.vx * dt;
-      b.y += b.vy * dt;
-      b.life -= dt;
-      b.prevX = px;
-      b.prevY = py;
-      b.trail.push({ x: b.x, y: b.y });
-      if (b.trail.length > 10) b.trail.shift();
-    }
-    g.bullets = g.bullets.filter(b =>
-      b.life > 0 && b.x > -20 && b.x < ARCADE_W + 20 && b.y > -20 && b.y < ARCADE_H + 20);
-
-    // Красные лучи инопланетян летят по прямой и отнимают сердце при попадании.
-    for (const eb of g.enemyBullets) {
-      const px = eb.x;
-      const py = eb.y;
-      eb.x += eb.vx * dt;
-      eb.y += eb.vy * dt;
-      eb.life -= dt;
-      eb.trail.push({ x: eb.x, y: eb.y });
-      if (eb.trail.length > 8) eb.trail.shift();
-      if (segmentHitsCircle(px, py, eb.x, eb.y, g.ship.x, g.ship.y, 11)) {
-        eb.dead = true;
-        arcadeHit();
-      }
-    }
-    g.enemyBullets = g.enemyBullets.filter(b =>
-      !b.dead && b.life > 0 && b.x > -30 && b.x < ARCADE_W + 30 && b.y > -30 && b.y < ARCADE_H + 30);
-
-    for (const m of g.meteors) {
-      m.y += m.speed * dt;
-      m.x += m.drift * dt;
-      m.tilt += m.spin * dt;
-      if (m.x < m.r) { m.x = m.r; m.drift *= -1; }
-      if (m.x > ARCADE_W - m.r) { m.x = ARCADE_W - m.r; m.drift *= -1; }
-      if (Math.hypot(m.x - g.ship.x, m.y - g.ship.y) < m.r + 8) {
-        m.dead = true;
-        arcadeHit();
-      } else if (m.y - m.r > ARCADE_H) {
-        // Улетевший метеорит просто исчезает: сердца тратятся только
-        // при прямом попадании или красном луче пришельцев.
-        m.dead = true;
-      }
-    }
-
-    for (const b of g.bullets) {
-      if (b.dead) continue;
-      for (const m of g.meteors) {
-        if (m.dead) continue;
-        if (segmentHitsCircle(
-              b.prevX === undefined ? b.x : b.prevX,
-              b.prevY === undefined ? b.y : b.prevY,
-              b.x, b.y, m.x, m.y, m.r + 7)) {
-          m.dead = true;
-          b.dead = true;
-          g.kills++;
-          g.meteorsKilled++;
-          for (let i = 0; i < 8; i++) {
-            const a = Math.random() * Math.PI * 2;
-            g.particles.push({
-              x: m.x, y: m.y,
-              vx: Math.cos(a) * (40 + Math.random() * 90),
-              vy: Math.sin(a) * (40 + Math.random() * 90),
-              life: 0.5 + Math.random() * 0.3, max: 0.8
-            });
-          }
-          arcadeUpdateKills();
-          break;
-        }
-      }
-    }
-
-    // Попадание по кораблю инопланетян: два выстрела, потом взрыв.
-    for (const b of g.bullets) {
-      if (b.dead) continue;
-      for (const a of g.aliens) {
-        if (a.dead) continue;
-        const bx = b.prevX === undefined ? b.x : b.prevX;
-        const by = b.prevY === undefined ? b.y : b.prevY;
-            if (segmentHitsCircle(bx, by, b.x, b.y, a.x, a.y, 24)) {
-          a.hp--;
-          b.dead = true;
-          for (let i = 0; i < 10; i++) {
-            const ang = Math.random() * Math.PI * 2;
-            g.particles.push({
-              x: a.x, y: a.y,
-              vx: Math.cos(ang) * (50 + Math.random() * 120),
-              vy: Math.sin(ang) * (50 + Math.random() * 120),
-              life: 0.5 + Math.random() * 0.4, max: 0.9
-            });
-          }
-          if (a.hp <= 0) {
-            a.dead = true;
-            g.kills++;
-            g.shipsKilled++;
-          }
-          arcadeUpdateKills();
-          break;
-        }
-      }
-    }
-
-    g.meteors = g.meteors.filter(m => !m.dead);
-    g.aliens = g.aliens.filter(a => !a.dead);
-    g.bullets = g.bullets.filter(b => !b.dead);
-    for (const p of g.particles) {
-      p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt;
-    }
-    g.particles = g.particles.filter(p => p.life > 0);
-
-    if (!g.over && g.meteorsKilled >= METEOR_GOAL && g.shipsKilled >= SHIP_GOAL) arcadeWin();
-  }
-
-  function arcadeDraw() {
-    const g = arcade;
-    if (!g) return;
-
-    const sky = ctx.createLinearGradient(0, 0, 0, ARCADE_H);
-    sky.addColorStop(0, "#04120e");
-    sky.addColorStop(1, "#010504");
-    ctx.fillStyle = sky;
-    ctx.fillRect(0, 0, ARCADE_W, ARCADE_H);
-
-    for (const s of arcadeStars) {
-      ctx.fillStyle = "rgba(207,233,221," + s.a + ")";
-      ctx.fillRect(s.x, s.y, s.r, s.r);
-    }
-
-    ctx.fillStyle = "rgba(110,242,164,.09)";
-    ctx.fillRect(0, ARCADE_H - 2, ARCADE_W, 2);
-
-    for (const m of g.meteors) {
-      ctx.save();
-      ctx.translate(m.x, m.y);
-      ctx.rotate(m.tilt);
-      ctx.beginPath();
-      for (let i = 0; i < 8; i++) {
-        const a = (i / 8) * Math.PI * 2;
-        const r = m.r * (0.78 + ((i * 7 + Math.floor(m.seed)) % 5) / 12);
-        const px = Math.cos(a) * r;
-        const py = Math.sin(a) * r;
-        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-      }
-      ctx.closePath();
-      ctx.fillStyle = "#56685f";
-      ctx.fill();
-      ctx.strokeStyle = "#9ab2a5";
-      ctx.lineWidth = 1.2;
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    for (const a of g.aliens) {
-      const bob = Math.sin(a.phase * 3) * 3;
-      ctx.save();
-      ctx.translate(a.x, a.y + bob);
-      ctx.shadowColor = "#ff5c5c";
-      ctx.shadowBlur = 14;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, 19, 9, 0, 0, Math.PI * 2);
-      ctx.fillStyle = a.hp === 2 ? "#6d2b2b" : "#8a3a2f";
-      ctx.fill();
-      ctx.strokeStyle = "#ff7a6a";
-      ctx.lineWidth = 1.4;
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.ellipse(0, -4, 9, 5, 0, Math.PI, 0);
-      ctx.stroke();
-      ctx.fillStyle = "#ffd0c0";
-      ctx.fillRect(-8, 1, 4, 3);
-      ctx.fillRect(4, 1, 4, 3);
-      ctx.restore();
-    }
-    ctx.shadowBlur = 0;
-
-    ctx.strokeStyle = "rgba(110,242,164,.75)";
-    ctx.lineWidth = 2;
-    ctx.shadowColor = "#6ef2a4";
-    ctx.shadowBlur = 10;
-    for (const b of g.bullets) {
-      if (b.trail.length > 1) {
-        ctx.beginPath();
-        ctx.moveTo(b.trail[0].x, b.trail[0].y);
-        for (let i = 1; i < b.trail.length; i++) ctx.lineTo(b.trail[i].x, b.trail[i].y);
-        ctx.stroke();
-      }
-      ctx.beginPath();
-      ctx.arc(b.x, b.y, 3, 0, Math.PI * 2);
-      ctx.fillStyle = "#eafff4";
-      ctx.fill();
-    }
-    ctx.shadowBlur = 0;
-
-    // Красные лучи хорошо видны на фоне и отличаются от наших зелёных.
-    ctx.strokeStyle = "rgba(255,90,80,.95)";
-    ctx.lineWidth = 2.5;
-    ctx.shadowColor = "#ff4a3a";
-    ctx.shadowBlur = 12;
-    for (const eb of g.enemyBullets) {
-      if (eb.trail.length > 1) {
-        ctx.beginPath();
-        ctx.moveTo(eb.trail[0].x, eb.trail[0].y);
-        for (let i = 1; i < eb.trail.length; i++) ctx.lineTo(eb.trail[i].x, eb.trail[i].y);
-        ctx.stroke();
-      }
-      ctx.beginPath();
-      ctx.arc(eb.x, eb.y, 3.5, 0, Math.PI * 2);
-      ctx.fillStyle = "#ffd0c0";
-      ctx.fill();
-    }
-    ctx.shadowBlur = 0;
-
-    for (const p of g.particles) {
-      ctx.fillStyle = "rgba(255,200,87," + Math.max(0, p.life / p.max) + ")";
-      ctx.fillRect(p.x, p.y, 2, 2);
-    }
-
-    // Кораблик-«корбалик».
-    const x = g.ship.x;
-    const y = g.ship.y;
-    ctx.save();
-    ctx.translate(x, y);
-    if (arcadeKeys.left || arcadeKeys.right) {
-      ctx.fillStyle = "rgba(255,180,70,.85)";
-      ctx.beginPath();
-      ctx.moveTo(-5, 10);
-      ctx.lineTo(0, 21 + Math.random() * 6);
-      ctx.lineTo(5, 10);
-      ctx.closePath();
-      ctx.fill();
-    }
-    ctx.beginPath();
-    ctx.moveTo(0, -20);
-    ctx.lineTo(13, 14);
-    ctx.lineTo(0, 8);
-    ctx.lineTo(-13, 14);
-    ctx.closePath();
-    ctx.fillStyle = "#1d6b4b";
-    ctx.fill();
-    ctx.strokeStyle = "#6ef2a4";
-    ctx.lineWidth = 1.6;
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(0, -2, 3, 0, Math.PI * 2);
-    ctx.fillStyle = "#ffd77a";
-    ctx.fill();
-    ctx.restore();
-  }
-
-  function arcadeFrame(now) {
-    if (!arcade || arcadeOverlay.hidden) return;
-    if (!arcade.last) arcade.last = now;
-    // Догоняем пропущенное время небольшими шагами: даже если браузер
-    // заглушил requestAnimationFrame, игра не замедлится в несколько раз.
-    let elapsed = Math.min((now - arcade.last) / 1000, 1);
-    arcade.last = now;
-    while (elapsed > 0 && arcade && !arcade.over) {
-      const step = Math.min(elapsed, 0.05);
-      arcadeStep(step);
-      elapsed -= step;
-    }
-    arcadeDraw();
-    if (arcade && !arcade.over) {
-      arcade.raf = requestAnimationFrame(arcadeFrame);
-    }
-  }
-
-  function arcadeWin() {
-    if (!arcade) return;
-    arcade.over = true;
-    if (arcade.raf) cancelAnimationFrame(arcade.raf);
-    arcadeOverlay.classList.remove("visible");
-    victoryName.textContent = cadetLabel();
-    victoryDetail.textContent = "Сбито " + METEOR_GOAL + " метеоритов и " + SHIP_GOAL +
-      " кораблей. Найден гаджет: «" + randomGadget() + "».";
-    arcadeFinishTimer = setTimeout(() => {
-      arcadeOverlay.hidden = true;
-      victoryOverlay.hidden = false;
-      requestAnimationFrame(() => victoryOverlay.classList.add("visible"));
-    }, 650);
-  }
-
-  function arcadeLose() {
-    if (!arcade) return;
-    if (arcade.raf) cancelAnimationFrame(arcade.raf);
-    arcadeOverlay.classList.remove("visible");
-    defeatName.textContent = cadetLabel();
-    defeatDetail.textContent = "Канал пробит метеоритами. Гаджет: «" + randomGadget() + "».";
-    arcadeFinishTimer = setTimeout(() => {
-      arcadeOverlay.hidden = true;
-      defeatOverlay.hidden = false;
-      requestAnimationFrame(() => defeatOverlay.classList.add("visible"));
-    }, 650);
-  }
-
-  function openArcade() {
-    if (arcadeAutoTimer) { clearTimeout(arcadeAutoTimer); arcadeAutoTimer = null; }
-    if (arcadeHideTimer) { clearTimeout(arcadeHideTimer); arcadeHideTimer = null; }
-    if (arcadeFinishTimer) { clearTimeout(arcadeFinishTimer); arcadeFinishTimer = null; }
-    if (!victoryOverlay.hidden || !defeatOverlay.hidden) return;
-
-    arcadeReset();
-    arcadeOverlay.hidden = false;
-    requestAnimationFrame(() => arcadeOverlay.classList.add("visible"));
-    input.blur();
-    arcade.raf = requestAnimationFrame(arcadeFrame);
-  }
-
-  function closeArcade() {
-    if (arcadeFinishTimer) { clearTimeout(arcadeFinishTimer); arcadeFinishTimer = null; }
-    if (arcade && arcade.raf) cancelAnimationFrame(arcade.raf);
-    arcade = null;
-    arcadeKeys.left = arcadeKeys.right = arcadeKeys.fire = false;
-    if (!arcadeOverlay.hidden) {
-      arcadeOverlay.classList.remove("visible");
-      arcadeHideTimer = setTimeout(() => { arcadeOverlay.hidden = true; }, 600);
-    }
-  }
-
-  function hideVictory() {
-    victoryOverlay.classList.remove("visible");
-    setTimeout(() => { victoryOverlay.hidden = true; }, 650);
-  }
-
-  function hideDefeat() {
-    defeatOverlay.classList.remove("visible");
-    setTimeout(() => { defeatOverlay.hidden = true; }, 650);
-  }
-
-  function canvasPointerX(event) {
-    const rect = canvas.getBoundingClientRect();
-    return Math.max(24, Math.min(ARCADE_W - 24, (event.clientX - rect.left) / rect.width * ARCADE_W));
-  }
-
-  arcadeBtn.addEventListener("click", openArcade);
-  arcadeClose.addEventListener("click", closeArcade);
-  arcadeReloadBtn.addEventListener("click", arcadeStartReload);
-
-  arcadeRestart.addEventListener("click", () => {
-    if (!arcade) return;
-    if (arcade.raf) cancelAnimationFrame(arcade.raf);
-    arcadeReset();
-    arcade.last = 0;
-    arcade.raf = requestAnimationFrame(arcadeFrame);
-  });
-
-  victoryRestart.addEventListener("click", () => {
-    hideVictory();
-    resetBtn.click();
-  });
-
-  defeatRetry.addEventListener("click", () => {
-    defeatOverlay.classList.remove("visible");
-    defeatOverlay.hidden = true;
-    openArcade();
-  });
-
-  defeatReset.addEventListener("click", () => {
-    hideDefeat();
-    resetBtn.click();
-  });
-
-  defeatClose.addEventListener("click", () => {
-    window.close();
-    setTimeout(() => {
-      defeatDetail.textContent += " Браузер сам не закрылся — закрой вкладку вручную.";
-    }, 200);
-  });
-
-  window.addEventListener("keydown", (event) => {
-    if (arcadeOverlay.hidden || !arcade) return;
-    const k = event.key;
-    if (k === "ArrowLeft" || k === "a" || k === "A" || k === "ф") {
-      arcadeKeys.left = true; event.preventDefault();
-    } else if (k === "ArrowRight" || k === "d" || k === "D" || k === "в") {
-      arcadeKeys.right = true; event.preventDefault();
-    } else if (k === " " || k === "Spacebar") {
-      arcadeKeys.fire = true; event.preventDefault();
-    } else if (k === "r" || k === "R" || k === "к") {
-      arcadeStartReload(); event.preventDefault();
-    }
-  });
-
-  window.addEventListener("keyup", (event) => {
-    const k = event.key;
-    if (k === "ArrowLeft" || k === "a" || k === "A" || k === "ф") arcadeKeys.left = false;
-    if (k === "ArrowRight" || k === "d" || k === "D" || k === "в") arcadeKeys.right = false;
-    if (k === " " || k === "Spacebar") arcadeKeys.fire = false;
-  });
-
-  window.addEventListener("blur", () => {
-    arcadeKeys.left = arcadeKeys.right = arcadeKeys.fire = false;
-  });
-
-  canvas.addEventListener("pointermove", (event) => {
-    if (arcade) arcade.ship.x = canvasPointerX(event);
-  });
-
-  canvas.addEventListener("pointerdown", (event) => {
-    event.preventDefault();
-    if (!arcade) return;
-    arcade.ship.x = canvasPointerX(event);
-    arcadeKeys.fire = true;
-    arcadeFire();
-  });
-
-  canvas.addEventListener("pointerup", () => { arcadeKeys.fire = false; });
-  canvas.addEventListener("pointerleave", () => { arcadeKeys.fire = false; });
-
-  let state = { cwd: "/", hp: 3, max_hp: 3, done: 0, won: false, hint: "", name: "Кадет" };
-  let history = [];
-  let historyPos = 0;
-  let busy = false;
-  let resetting = false;
-  // Растёт при сбросе: ответы на команды из старой миссии игнорируются.
-  let epoch = 0;
 
   function append(text) {
     if (!text) return;
@@ -2354,7 +1472,6 @@ auto_restart = false`
     }
     hpTrack.setAttribute("aria-label", next.done + " из " + next.total + " заданий");
     hintBox.classList.toggle("win", !!next.completed);
-    arcadeBtn.hidden = true;
     document.title = next.completed ? "Тренажёр Linux пройден — Гелиос-7" : "Тренажёр Linux — Гелиос-7";
   }
 
@@ -2376,7 +1493,6 @@ auto_restart = false`
     hpTrack.setAttribute("aria-label", next.hp + " из " + next.max_hp + " HP");
     hintEl.textContent = next.hint;
     hintBox.classList.toggle("win", next.won);
-    arcadeBtn.hidden = !next.won;
     document.title = next.won
       ? "Связь восстановлена — Гелиос-7"
       : "Гелиос-7 — восстанови связь";
@@ -2540,10 +1656,6 @@ auto_restart = false`
     epoch++;
     busy = false;
 
-    if (arcadeAutoTimer) { clearTimeout(arcadeAutoTimer); arcadeAutoTimer = null; }
-    closeArcade();
-    if (!victoryOverlay.hidden) hideVictory();
-    if (!defeatOverlay.hidden) hideDefeat();
 
     history = [];
     historyPos = 0;
