@@ -728,7 +728,7 @@
       <span class="sigil" aria-hidden="true">◈</span>
       <div>
         <h1>ОТДЕЛ ИБ</h1>
-        <p>расследование инцидента · v1.7.1</p>
+        <p>расследование инцидента · v1.7.2</p>
       </div>
     </div>
     <div class="boss">
@@ -1151,7 +1151,7 @@ auto_restart = false`
       goal:"grep READY /station/events.log — ищет строку READY в журнале.", hint:"grep СЛОВО ФАЙЛ ищет подстроку.",
       checks:[["grep","READY","/station/events.log"]] },
     { title:"4. Кто я в системе", brief:"Узнай свою учётную запись и права.",
-      goal:"whoami — имя пользователя; id — UID, GID и группы.", hint:"whoami — пользователь, id — UID/GID/группы.",
+      goal:"whoami — имя пользователя; затем id — UID, GID и группы. Вводи по одной команде на строку.", hint:"whoami — пользователь, id — UID/GID/группы. Введи whoami, Enter, затем id, Enter.",
       checks:[["whoami"],["id"]] },
     { title:"5. Скрытые файлы", brief:"В домашнем каталоге есть скрытая заметка.",
       goal:"ls -la /home/analyst — скрытые файлы и права; cat /home/analyst/.notes — читает заметку.",
@@ -1255,8 +1255,16 @@ auto_restart = false`
 
     function resolve(arg) {
       if (!arg || arg === ".") return cwd;
-      if (arg.startsWith("/")) return arg.replace(/\/+/g,"/").replace(/\/+$/,"") || "/";
-      return resolve(cwd.replace(/\/+/g,"/").replace(/\/+$/,"") + "/" + arg);
+      // Нормализуем . и .., как path.Clean в linux.go: раньше cd ..
+      // давал путь вида /home/analyst/.. и не работал в file://.
+      const raw = arg.startsWith("/") ? arg : cwd + "/" + arg;
+      const parts = [];
+      for (const seg of raw.split("/")) {
+        if (!seg || seg === ".") continue;
+        if (seg === "..") { parts.pop(); continue; }
+        parts.push(seg);
+      }
+      return "/" + parts.join("/");
     }
 
     function progress(cmd, as) {
@@ -1337,7 +1345,7 @@ auto_restart = false`
           const root = resolve(as.find(a => !a.startsWith("-")) || "/");
           const idx = as.indexOf("-name");
           const pattern = idx >= 0 ? as[idx+1] : "";
-          const matches = Object.keys(fs).filter(p => p.startsWith(root + "/") && !fs[p].dir &&
+          const matches = Object.keys(fs).filter(p => p.startsWith(root === "/" ? "/" : root + "/") && !fs[p].dir &&
             (!pattern || glob(p.split("/").pop(), pattern)));
           return matches.length ? matches.sort().join("\n") : "ничего не найдено";
         }
@@ -1349,6 +1357,7 @@ auto_restart = false`
           const node = fs[resolve(rest[rest.length-1])];
           if (!node) return "grep: нет такого файла";
           const lines = node.data.replace(/\n+$/,"").split("\n");
+          // Оставляем исходный регистр строк, как и сервер после правки.
           const found = lines.filter(l => (insensitive ? l.toLowerCase() : l).includes(needle));
           if (count) return String(found.length);
           return found.length ? found.join("\n") : "совпадений не найдено";
@@ -1437,7 +1446,7 @@ auto_restart = false`
   }
 
   function renderLinux(next) {
-    linuxTitle.textContent = next.completed ? "Все 10 заданий выполнены" : next.title;
+    linuxTitle.textContent = next.completed ? "Все " + next.total + " заданий выполнены" : next.title;
     linuxBrief.textContent = next.brief;
     if (next.completed) {
       linuxGoal.textContent = "Итог: " + next.score + " очков. Набери reset, чтобы пройти заново.";

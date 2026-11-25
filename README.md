@@ -241,10 +241,10 @@ systemctl restart sshd
 Ob/
 ├── main.go        HTTP-сервер, cookie-сессии, API
 ├── game.go        виртуальная ФС, команды, цели и HP
-├── linux_data.go  данные тренажёра Linux: ФС, процессы, 10 заданий
+├── linux_data.go  данные тренажёра Linux: ФС, процессы, 13 заданий
 ├── linux.go       логика тренажёра Linux, команды и очки
 ├── game_test.go   тесты игровой логики
-├── linux_test.go  тесты прохождения всех 10 заданий Linux
+├── linux_test.go  тесты прохождения всех 13 заданий Linux
 ├── main_test.go   тесты HTTP-сценария
 ├── parity_test.go проверка: index.html и Go-код не разъехались
 ├── index.html     страница: терминал, прогресс, подсказка, форма

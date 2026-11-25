@@ -38,4 +38,24 @@ cmds.forEach((group, i) => {
 });
 const s = g.state();
 if (!s.completed || s.score !== s.total * 100) throw new Error('final: ' + JSON.stringify(s));
+
+// Регрессионные проверки офлайн-режима (file://).
+const g2 = globalThis.createLinuxGame();
+g2.execute('cd /home/analyst');
+const up = g2.execute('cd ..');
+if (up.state.cwd !== '/home') throw new Error('cd .. offline: ' + up.state.cwd);
+if (g2.execute('cd ../..').state.cwd !== '/') throw new Error('cd ../.. offline');
+
+const g3 = globalThis.createLinuxGame();
+const found = g3.execute('find / -name "*.log"').output;
+if (!found.includes('/var/log/auth.log') || !found.includes('/station/events.log')) {
+  throw new Error('find / offline: ' + found);
+}
+
+const g4 = globalThis.createLinuxGame();
+const insensitive = g4.execute('grep -i "failed password" /var/log/auth.log').output;
+if (!insensitive.includes('Failed password for root')) {
+  throw new Error('grep -i offline должен сохранять регистр: ' + insensitive);
+}
+
 console.log('OK offline linux:', JSON.stringify({done:s.done, score:s.score, completed:s.completed}));

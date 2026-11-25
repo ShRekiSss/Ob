@@ -123,8 +123,8 @@ var linuxMissions = []linuxMission{
 	{
 		Title:  "4. Кто я в системе",
 		Brief:  "Ты стажёр отдела ИБ. Прежде чем что-то делать, узнай свою учётную запись и права.",
-		Goal:   "whoami — имя пользователя; id — UID, GID и группы.",
-		Hint:   "whoami покажет пользователя, id — UID, GID и группы. Запомни группу sudo.",
+		Goal:   "whoami — имя пользователя; затем id — UID, GID и группы. Вводи по одной команде на строку.",
+		Hint:   "whoami покажет пользователя, id — UID, GID и группы. Запомни группу sudo. Введи whoami, нажми Enter, затем id, нажми Enter.",
 		Checks: []linuxCheck{{Cmd: "whoami"}, {Cmd: "id"}},
 	},
 	{

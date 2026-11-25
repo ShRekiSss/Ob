@@ -3,6 +3,7 @@ package main
 import (
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestLinuxFullPlaythrough(t *testing.T) {
@@ -103,4 +104,59 @@ func TestLinuxReset(t *testing.T) {
 		}
 	}
 	t.Fatal("сброс не восстановил процессы")
+}
+
+// Команда reset внутри тренажёра раньше вызывала Reset() с уже
+// заблокированным мьютексом и навсегда вешала сессию.
+func TestLinuxResetCommandDoesNotDeadlock(t *testing.T) {
+	s := NewLinuxSession()
+	s.Execute("whoami")
+	done := make(chan string, 1)
+	go func() {
+		res := s.Execute("reset")
+		done <- res.Output
+	}()
+	select {
+	case out := <-done:
+		if !strings.Contains(out, "начат заново") {
+			t.Fatalf("reset: %q", out)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("команда reset заблокировала сессию")
+	}
+	if st := s.State(); st.Mission != 1 || st.Done != 0 || st.Score != 0 {
+		t.Fatalf("состояние после reset: %+v", st)
+	}
+	// Сессия должна отвечать на следующие команды.
+	if out := s.Execute("whoami").Output; out != "analyst" {
+		t.Fatalf("сессия не отвечает после reset: %q", out)
+	}
+}
+
+func TestLinuxFindRootAndCase(t *testing.T) {
+	s := NewLinuxSession()
+	out := s.Execute(`find / -name "*.log"`).Output
+	if !strings.Contains(out, "/var/log/auth.log") {
+		t.Fatalf("find / не нашёл логи: %q", out)
+	}
+	if !strings.Contains(out, "/station/events.log") {
+		t.Fatalf("find / должен находить логи во всех подкаталогах: %q", out)
+	}
+}
+
+func TestLinuxGrepInsensitiveKeepsOriginalCase(t *testing.T) {
+	s := NewLinuxSession()
+	out := s.Execute(`grep -i "failed password" /var/log/auth.log`).Output
+	if !strings.Contains(out, "Failed password for root") {
+		t.Fatalf("grep -i должен сохранять исходный регистр: %q", out)
+	}
+	if count := s.Execute(`grep -i -c "failed password" /var/log/auth.log`).Output; count != "3" {
+		t.Fatalf("grep -i -c: %q", count)
+	}
+}
+
+func TestLinuxHelpMissionCount(t *testing.T) {
+	if !strings.Contains(linuxHelp, "13 заданий") {
+		t.Fatal("в help указано неверное число заданий")
+	}
 }

@@ -85,12 +85,19 @@ func (s *LinuxSession) State() LinuxSnapshot {
 func (s *LinuxSession) Reset() LinuxSnapshot {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	s.resetLocked()
+	return s.snapshot()
+}
+
+// resetLocked сбрасывает состояние. Вызывается только с удержанным mu:
+// sync.Mutex не реентерабелен, поэтому повторный Lock из run("reset")
+// навсегда блокировал бы сессию.
+func (s *LinuxSession) resetLocked() {
 	fresh := NewLinuxSession()
 	s.fs, s.procs, s.sockets = fresh.fs, fresh.procs, fresh.sockets
 	s.rules, s.cwd, s.mission = nil, fresh.cwd, 0
 	s.checked, s.hints, s.mistakes = fresh.checked, 0, 0
-	s.sshdUp, s.finished = true, false
-	return s.snapshot()
+	s.sshdUp, s.finished, s.scare = true, false, false
 }
 
 func (s *LinuxSession) snapshot() LinuxSnapshot {
@@ -196,7 +203,7 @@ func (s *LinuxSession) checkProgress(cmd string, args []string) {
 	}
 }
 
-const linuxHelp = `ТРЕНАЖЁР LINUX — 10 заданий для 10.02.05
+const linuxHelp = `ТРЕНАЖЁР LINUX — 13 заданий для 10.02.05
 
 КОМАНДЫ
   whoami, id          учётная запись, UID/GID, группы
@@ -265,7 +272,7 @@ func (s *LinuxSession) run(line string) string {
 	case "help", "?":
 		return linuxHelp
 	case "reset":
-		s.Reset()
+		s.resetLocked()
 		return "Тренажёр Linux начат заново."
 	case "clear":
 		return ""
@@ -385,9 +392,11 @@ func (s *LinuxSession) find(args []string) string {
 	if err != nil {
 		return "find: " + err.Error()
 	}
+	// resolved == "/" давал префикс "//" и не находил ничего.
+	prefix := strings.TrimSuffix(resolved, "/") + "/"
 	matches := make([]string, 0)
 	for p := range s.fs {
-		if !strings.HasPrefix(p, resolved+"/") || s.fs[p].Dir {
+		if !strings.HasPrefix(p, prefix) || s.fs[p].Dir {
 			continue
 		}
 		if pattern == "" || matchGlob(path.Base(p), pattern) {
@@ -451,13 +460,19 @@ func (s *LinuxSession) grep(args []string) string {
 		return fmt.Sprintf("grep: %s: нет такого файла", fileArg)
 	}
 	hay := node.Data
-	compareNeedle, compareHay := needle, hay
+	compareNeedle := needle
 	if insensitive {
-		compareNeedle, compareHay = strings.ToLower(needle), strings.ToLower(hay)
+		compareNeedle = strings.ToLower(needle)
 	}
+	// Сравниваем в нижнем регистре, но в выводе возвращаем исходную строку:
+	// раньше -i печатал нижний регистр и мог подменить строку дубликатом.
 	matches := make([]string, 0)
-	for _, line := range strings.Split(strings.TrimRight(compareHay, "\n"), "\n") {
-		if strings.Contains(line, compareNeedle) {
+	for _, line := range strings.Split(strings.TrimRight(hay, "\n"), "\n") {
+		cmp := line
+		if insensitive {
+			cmp = strings.ToLower(cmp)
+		}
+		if strings.Contains(cmp, compareNeedle) {
 			matches = append(matches, line)
 		}
 	}
@@ -467,24 +482,7 @@ func (s *LinuxSession) grep(args []string) string {
 	if len(matches) == 0 {
 		return fmt.Sprintf("совпадений не найдено: %s", needle)
 	}
-	out := make([]string, len(matches))
-	for i, line := range matches {
-		if insensitive {
-			out[i] = strings.Split(hay, "\n")[indexInsensitive(hay, line)]
-		} else {
-			out[i] = line
-		}
-	}
-	return strings.Join(out, "\n")
-}
-
-func indexInsensitive(hay, lowerLine string) int {
-	for i, line := range strings.Split(hay, "\n") {
-		if strings.ToLower(line) == lowerLine {
-			return i
-		}
-	}
-	return 0
+	return strings.Join(matches, "\n")
 }
 
 func (s *LinuxSession) chmod(args []string) string {
