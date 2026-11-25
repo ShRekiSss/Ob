@@ -20,7 +20,6 @@ type LinuxSession struct {
 	cwd      string
 	mission  int // 0-based индекс текущего задания
 	checked  [][]bool
-	hints    int
 	mistakes int
 	sshdUp   bool
 	finished bool
@@ -96,7 +95,7 @@ func (s *LinuxSession) resetLocked() {
 	fresh := NewLinuxSession()
 	s.fs, s.procs, s.sockets = fresh.fs, fresh.procs, fresh.sockets
 	s.rules, s.cwd, s.mission = nil, fresh.cwd, 0
-	s.checked, s.hints, s.mistakes = fresh.checked, 0, 0
+	s.checked, s.mistakes = fresh.checked, 0
 	s.sshdUp, s.finished, s.scare = true, false, false
 }
 
@@ -112,7 +111,7 @@ func (s *LinuxSession) snapshot() LinuxSnapshot {
 	if s.finished {
 		completed = len(linuxMissions)
 	}
-	score := completed*100 - s.hints*10 - s.mistakes*5
+	score := completed*100 - s.mistakes*5
 	if score < 0 {
 		score = 0
 	}
@@ -219,7 +218,7 @@ const linuxHelp = `ТРЕНАЖЁР LINUX — 13 заданий для 10.02.05
   sha256sum ФАЙЛ      контроль целостности
   tar -czf АРХИВ ПАПКА   архивация доказательств
   systemctl restart sshd   перезапуск службы
-  hint                подсказка (−10 очков)
+  arcade              бесконечная аркада (после всех 13 заданий)
   clear               очистить экран
   reset               начать тренажёр заново`
 
@@ -266,9 +265,6 @@ func (s *LinuxSession) run(line string) string {
 		return s.tar(args)
 	case "systemctl":
 		return s.systemctl(args)
-	case "hint":
-		s.hints++
-		return "Подсказка: " + linuxMissions[s.mission].Hint
 	case "help", "?":
 		return linuxHelp
 	case "reset":

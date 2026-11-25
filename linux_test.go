@@ -62,14 +62,13 @@ func TestLinuxFullPlaythrough(t *testing.T) {
 	}
 }
 
-func TestLinuxScoreAndHint(t *testing.T) {
+func TestLinuxScoreAndMistakes(t *testing.T) {
 	s := NewLinuxSession()
-	s.Execute("hint")
 	s.Execute("bogus-command")
 	s.Execute("ls /station")
 	state := s.State()
-	if state.Done != 1 || state.Score != 85 {
-		t.Fatalf("счёт после подсказки и ошибки: %+v", state)
+	if state.Done != 1 || state.Score != 95 {
+		t.Fatalf("счёт после ошибки: %+v", state)
 	}
 }
 

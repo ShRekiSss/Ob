@@ -689,7 +689,11 @@
     border-radius: 0 5px 5px 0;
     background: rgba(110, 242, 164, .07);
   }
-  .linux-cmd { font-weight: 700; color: var(--amber); }
+  .linux-cmd {
+    font-weight: 700;
+    color: #ffe45c;
+    text-shadow: 0 0 10px rgba(255, 228, 92, .35);
+  }
   .linux-meta { color: var(--muted); font-size: 11px; }
 
   .scare-overlay {
@@ -728,7 +732,7 @@
       <span class="sigil" aria-hidden="true">◈</span>
       <div>
         <h1>ОТДЕЛ ИБ</h1>
-        <p>расследование инцидента · v1.8.0</p>
+        <p>расследование инцидента · v1.8.1</p>
       </div>
     </div>
     <div class="boss">
@@ -769,7 +773,7 @@
            autocapitalize="off" autocomplete="off" placeholder="введи команду…"
            aria-label="Команда" autofocus>
     <button class="reset" id="reset" type="button">Начать заново</button>
-    <button class="arcade-launch" id="arcade-btn" type="button">Аркада: бесконечный бой</button>
+    <button class="arcade-launch" id="arcade-btn" type="button" hidden>Аркада: бесконечный бой</button>
   </form>
 </main>
 
@@ -779,12 +783,17 @@
       <span>АРКАДА · БЕСКОНЕЧНЫЙ БОЙ</span>
       <button class="arcade-close" id="arcade-close" type="button" aria-label="Закрыть аркаду">×</button>
     </div>
-    <p class="arcade-tip">← → или A/D — движение · Пробел / мышь — огонь · P — пауза</p>
-    <canvas id="arcade-canvas" width="720" height="420"></canvas>
+    <p class="arcade-tip">
+      ← → или A/D — движение кораблика · Пробел или клик — стрельба ·
+      R — перезарядка · сбивай метеориты и корабли, береги 3 сердца
+    </p>
+    <canvas id="arcade-canvas" width="720" height="420" aria-label="Мини-игра: защита канала"></canvas>
     <div class="arcade-stats">
-      <span id="arcade-score">очки: 0 · рекорд: 0</span>
-      <span id="arcade-wave">волна 1</span>
-      <span id="arcade-lives">жизни: 3</span>
+      <span id="arcade-kills">Враги: 0 · волна 1</span>
+      <span id="arcade-ammo">Патроны: 6 / 6</span>
+      <span class="reload-bar" id="arcade-reload-bar" aria-hidden="true"><i></i></span>
+      <button id="arcade-reload" type="button">Перезарядка (R)</button>
+      <span id="arcade-lives">♥ ♥ ♥</span>
       <button id="arcade-restart" type="button">Заново</button>
     </div>
   </div>
@@ -850,7 +859,7 @@
     "Ты стажёр отдела ИБ. Разберись в инциденте от первой",
     "команды до финального отчёта — всё в этом терминале.",
     "",
-    "Набери help, чтобы увидеть команды. hint — подсказка.",
+    "Набери help, чтобы увидеть команды.",
     ""
   ].join("\n");
 
@@ -876,6 +885,7 @@
     "  help, ?             Показывает эту справку.",
     "  gadget              Выдаёт случайный гаджет.",
     "  name ИМЯ           Задать имя кадета (появится в финале).",
+    "  arcade              Бесконечная аркада (после всех 13 заданий).",
     "",
     "КАК ПРОЙТИ МИССИЮ",
     "  1. Посмотри, что лежит в /station:  ls /station",
@@ -1250,7 +1260,7 @@ auto_restart = false`
     ];
     let procs = makeProcs();
     let sockets = makeSockets();
-    let cwd = "/home/analyst", mission = 0, hints = 0, mistakes = 0, finished = false, scare = false;
+    let cwd = "/home/analyst", mission = 0, mistakes = 0, finished = false, scare = false;
     let checks = L_MISSIONS.map(m => m.checks.map(() => false));
     function args(line) {
       const fields = line.trim().split(/\s+/).filter(Boolean);
@@ -1316,7 +1326,7 @@ auto_restart = false`
     function snapshot() {
       const m = L_MISSIONS[mission];
       const done = finished ? L_MISSIONS.length : mission;
-      const score = Math.max(0, done*100 - hints*10 - mistakes*5);
+      const score = Math.max(0, done*100 - mistakes*5);
       return {
         mission:mission+1, total:L_MISSIONS.length, title:m.title, brief:m.brief,
         goal:m.goal, hint:m.hint, done:done, step_done:checks[mission].filter(Boolean).length,
@@ -1422,8 +1432,7 @@ auto_restart = false`
           return "архив создан: " + t;
         }
         case "systemctl": return "служба " + (as[1] || "") + " перезапущена";
-        case "hint": hints++; return "Подсказка: " + L_MISSIONS[mission].hint;
-        case "help": return "ТРЕНАЖЁР LINUX: whoami, id, pwd, ls [-la], cd, cat, find, grep [-i] [-c], chmod, ps aux, kill PID, ss -tulpn, iptables, sed -i, sha256sum, tar -czf, systemctl restart, hint, reset, clear";
+        case "help": return "ТРЕНАЖЁР LINUX: whoami, id, pwd, ls [-la], cd, cat, find, grep [-i] [-c], chmod, ps aux, kill PID, ss -tulpn, iptables, sed -i, sha256sum, tar -czf, systemctl restart, arcade, reset, clear";
         case "reset": { resetLocal(); return "Тренажёр Linux начат заново."; }
         case "clear": return "";
         default: mistakes++; return "команда не найдена: " + cmd + "\nНабери help.";
@@ -1432,7 +1441,7 @@ auto_restart = false`
 
     function resetLocal() {
       fs = linuxFS(); procs = makeProcs(); sockets = makeSockets();
-      cwd = "/home/analyst"; mission = 0; hints = 0; mistakes = 0; finished = false; scare = false;
+      cwd = "/home/analyst"; mission = 0; mistakes = 0; finished = false; scare = false;
       checks = L_MISSIONS.map(m => m.checks.map(() => false));
       return snapshot();
     }
@@ -1463,33 +1472,45 @@ auto_restart = false`
     });
   }
 
+  // Все команды в цели задания подсвечиваются жёлтым, а не только первая.
+  const GOAL_COMMANDS = /\b(whoami|id|pwd|ls|cd|cat|find|grep|chmod|ps|kill|ss|iptables|sed|sha256sum|tar|systemctl)\b[^—;]*/g;
+  function goalText(text) {
+    const span = document.createElement("span");
+    span.textContent = text;
+    linuxGoal.appendChild(span);
+  }
+  function renderGoal(goal) {
+    linuxGoal.replaceChildren();
+    let last = 0;
+    GOAL_COMMANDS.lastIndex = 0;
+    let m;
+    while ((m = GOAL_COMMANDS.exec(goal)) !== null) {
+      goalText(goal.slice(last, m.index));
+      const code = document.createElement("code");
+      code.className = "linux-cmd";
+      code.textContent = m[0].trim();
+      linuxGoal.appendChild(code);
+      last = m.index + m[0].length;
+    }
+    goalText(goal.slice(last));
+  }
+
   function renderLinux(next) {
+    // Кнопка аркады появляется сама только после всех 13 заданий.
+    if (arcadeBtn) arcadeBtn.hidden = !next.completed;
     linuxTitle.textContent = next.completed ? "Все " + next.total + " заданий выполнены" : next.title;
     linuxBrief.textContent = next.brief;
     if (next.completed) {
       linuxGoal.textContent = "Итог: " + next.score + " очков. Набери reset, чтобы пройти заново.";
     } else {
-      // Команду выделяем моноширинным жирным, остальное — обычным текстом.
-      const parts = next.goal.split(" — ");
-      linuxGoal.replaceChildren();
-      if (parts.length > 1) {
-        const code = document.createElement("code");
-        code.className = "linux-cmd";
-        code.textContent = parts[0];
-        const desc = document.createElement("span");
-        desc.textContent = " — " + parts.slice(1).join(" — ");
-        linuxGoal.appendChild(code);
-        linuxGoal.appendChild(desc);
-      } else {
-        linuxGoal.textContent = next.goal;
-      }
+      renderGoal(next.goal);
     }
     linuxProgress.textContent = "Задание " + Math.min(next.mission, next.total) +
       " / " + next.total + " · шаг " + next.step_done + "/" + next.step_total;
     linuxScore.textContent = next.score + " очков";
     hintEl.textContent = next.completed
       ? "Тренажёр пройден. Набери arcade — бесконечный бой с самолётом."
-      : "Команды: help · подсказка: hint (−10 очков) · аркада: arcade · сброс: reset";
+      : "Команды: help · аркада: arcade (после всех заданий) · сброс: reset";
     hpText.textContent = next.done + " / " + next.total + " заданий";
     hpTrack.replaceChildren();
     for (let i = 0; i < next.total; i++) {
@@ -1712,241 +1733,571 @@ auto_restart = false`
     }
   });
 
-  // ── Бонусная аркада: бесконечный бой с самолётом ────────────────────
-  // Отдельный оверлей: не меняет состояние миссии и работает в file://.
-  const arcadeOverlay = document.getElementById("arcade-overlay");
-  const arcadeBtn = document.getElementById("arcade-btn");
-  const arcadeClose = document.getElementById("arcade-close");
-  const arcadeRestart = document.getElementById("arcade-restart");
-  const arcadeCanvas = document.getElementById("arcade-canvas");
-  const arcadeScoreEl = document.getElementById("arcade-score");
-  const arcadeWaveEl = document.getElementById("arcade-wave");
-  const arcadeLivesEl = document.getElementById("arcade-lives");
+  // ── Мини-игра «Защита канала» (как в v1.6.0, теперь бесконечная) ─────
+  // Оригинальный самолётик, метеориты и инопланетные корабли. Ограничения
+  // по числу сбитых убраны: враги летят волнами, пока не кончатся сердца.
+  const canvas = document.getElementById('arcade-canvas');
+  const arcadeBtn = document.getElementById('arcade-btn');
+  const arcadeOverlay = document.getElementById('arcade-overlay');
+  const arcadeClose = document.getElementById('arcade-close');
+  const arcadeRestart = document.getElementById('arcade-restart');
+  const arcadeKills = document.getElementById('arcade-kills');
+  const arcadeLives = document.getElementById('arcade-lives');
+  const arcadeAmmo = document.getElementById('arcade-ammo');
+  const arcadeReloadBar = document.getElementById('arcade-reload-bar').firstElementChild;
+  const arcadeReloadBtn = document.getElementById('arcade-reload');
+  const ARCADE_W = canvas.width;
+  const ARCADE_H = canvas.height;
+  const arcadeKeys = { left: false, right: false, fire: false };
+  const rafFn = (window.requestAnimationFrame || ((fn) => setTimeout(() => fn(Date.now()), 16))).bind(window);
+  const cafFn = (window.cancelAnimationFrame || clearTimeout).bind(window);
   let arcade = null;
 
-  function nextFrame(fn) {
-    if (window.requestAnimationFrame) return window.requestAnimationFrame(fn);
-    return setTimeout(() => fn(Date.now()), 16);
+  const arcadeStars = Array.from({ length: 70 }, (_, i) => ({
+    x: (i * 137.51) % ARCADE_W,
+    y: (i * 71.37) % ARCADE_H,
+    r: i % 7 === 0 ? 1.5 : 0.9,
+    a: 0.2 + (i % 5) * 0.12
+  }));
+
+  const ARCADE_MAGAZINE = 6;
+  const ARCADE_RELOAD_TIME = 1.4;
+
+  function arcadeWave() { return arcade ? Math.floor(arcade.kills / 10) + 1 : 1; }
+
+  function arcadeUpdateAmmo() {
+    if (!arcade) return;
+    if (arcade.reloading) {
+      const pct = Math.round((1 - arcade.reloadTimer / ARCADE_RELOAD_TIME) * 100);
+      arcadeAmmo.textContent = 'Перезарядка… ' + pct + '%';
+      arcadeReloadBar.style.width = pct + '%';
+    } else {
+      arcadeAmmo.textContent = 'Патроны: ' + arcade.ammo + ' / ' + ARCADE_MAGAZINE;
+      arcadeReloadBar.style.width = (arcade.ammo / ARCADE_MAGAZINE * 100) + '%';
+    }
   }
-  function cancelFrame(id) {
-    if (window.cancelAnimationFrame) window.cancelAnimationFrame(id);
-    else clearTimeout(id);
+
+  function arcadeUpdateKills() {
+    if (!arcade) return;
+    arcadeKills.textContent = 'Враги: ' + arcade.kills +
+      ' · метеоры ' + arcade.meteorsKilled + ' · корабли ' + arcade.shipsKilled +
+      ' · волна ' + arcadeWave();
   }
 
-  function createArcade() {
-    const W = 720, H = 420;
-    const ctx = arcadeCanvas && arcadeCanvas.getContext ? arcadeCanvas.getContext("2d") : null;
-    const keys = Object.create(null);
-    let firing = false, raf = 0, last = 0, running = false;
-    let player, bullets, enemies, particles, stars;
-    let score, wave, kills, lives, spawnTimer, cooldown, invuln, paused, over, tick;
+  function arcadeStartReload() {
+    if (!arcade || arcade.over || arcade.reloading || arcade.ammo >= ARCADE_MAGAZINE) return;
+    arcade.reloading = true;
+    arcade.reloadTimer = ARCADE_RELOAD_TIME;
+    arcadeUpdateAmmo();
+  }
 
-    function best() {
-      try {
-        if (!window.localStorage) return 0;
-        return Number(window.localStorage.getItem("helios7-arcade-best")) || 0;
-      } catch (err) { return 0; }
-    }
-    function saveBest(value) {
-      try {
-        if (!window.localStorage) return;
-        window.localStorage.setItem("helios7-arcade-best", String(value));
-      } catch (err) { /* file:// или приватный режим — просто не сохраняем */ }
-    }
-    function hud() {
-      if (arcadeScoreEl) arcadeScoreEl.textContent = "очки: " + score + " · рекорд: " + Math.max(score, best());
-      if (arcadeWaveEl) arcadeWaveEl.textContent = "волна " + wave + " · сбито " + kills;
-      if (arcadeLivesEl) arcadeLivesEl.textContent = "жизни: " + lives;
-    }
-    function reset() {
-      player = { x: W / 2 - 13, y: H - 46, w: 26, h: 18, speed: 310 };
-      bullets = []; enemies = []; particles = [];
-      stars = Array.from({ length: 70 }, () => ({
-        x: Math.random() * W, y: Math.random() * H, s: 20 + Math.random() * 70, z: 1 + Math.random() * 2
-      }));
-      score = 0; wave = 1; kills = 0; lives = 3;
-      spawnTimer = 0.7; cooldown = 0; invuln = 0; paused = false; over = false; tick = 0;
-      hud();
-    }
-    function spawn() {
-      const roll = Math.random();
-      const type = wave < 2 ? "grunt" : (roll < 0.16 ? "tank" : (roll < 0.5 ? "fast" : "grunt"));
-      enemies.push({
-        x: 16 + Math.random() * (W - 60), y: -30,
-        w: type === "tank" ? 34 : 22, h: type === "tank" ? 26 : 16,
-        type: type, hp: type === "tank" ? 3 : 1,
-        speed: (type === "fast" ? 115 : 65) + wave * 9 + Math.random() * 30,
-        phase: Math.random() * 6.28
-      });
-    }
-    function boom(x, y, color) {
-      for (let i = 0; i < 12; i++) {
-        particles.push({ x: x, y: y, vx: (Math.random() - .5) * 190,
-          vy: (Math.random() - .5) * 190, life: .4 + Math.random() * .4, color: color });
+  function arcadeReset() {
+    arcade = {
+      ship: { x: ARCADE_W / 2, y: ARCADE_H - 44 },
+      bullets: [], enemyBullets: [], meteors: [], aliens: [], particles: [],
+      kills: 0, meteorsKilled: 0, shipsKilled: 0,
+      lives: 3, spawn: 0.6, alienTimer: 1.6, cooldown: 0,
+      ammo: 6, reloading: false, reloadTimer: 0,
+      last: 0, raf: 0, over: false
+    };
+    arcadeUpdateKills();
+    arcadeLives.textContent = '♥ ♥ ♥';
+    arcadeUpdateAmmo();
+  }
+
+  function arcadeSpawnMeteor() {
+    const r = 12 + Math.random() * 12;
+    arcade.meteors.push({
+      x: r + Math.random() * (ARCADE_W - 2 * r),
+      y: -r - 8,
+      r: r,
+      speed: 80 + Math.random() * 60 + arcade.kills * 2,
+      drift: (Math.random() - 0.5) * 40,
+      tilt: Math.random() * Math.PI,
+      spin: (Math.random() - 0.5) * 2,
+      seed: Math.random() * 100
+    });
+  }
+
+  function arcadeSpawnAlien() {
+    arcade.aliens.push({
+      x: 70 + Math.random() * (ARCADE_W - 140),
+      y: 52 + Math.random() * 78,
+      hp: 1 + Math.floor(arcade.kills / 30),
+      drift: (Math.random() < 0.5 ? -1 : 1) * (18 + Math.random() * 22),
+      fire: 2.0 + Math.random() * 1.2,
+      phase: Math.random() * 6,
+      dead: false
+    });
+  }
+
+  function arcadeAlienFire(alien) {
+    const dx = arcade.ship.x - alien.x;
+    const dy = arcade.ship.y - alien.y;
+    const base = Math.atan2(dy, dx) + (Math.random() - 0.5) * 0.5;
+    arcade.enemyBullets.push({
+      x: alien.x, y: alien.y + 12,
+      vx: Math.cos(base) * 170, vy: Math.sin(base) * 170,
+      life: 3,
+      trail: [{ x: alien.x, y: alien.y + 12 }]
+    });
+  }
+
+  function arcadeFire() {
+    if (!arcade || arcade.over || arcade.reloading || arcade.ammo <= 0) return;
+    let target = arcade.aliens.find(a => !a.dead) || null;
+    if (!target) {
+      let bestY = -Infinity;
+      for (const m of arcade.meteors) {
+        if (m.y < 0) continue;
+        if (m.y > bestY) { bestY = m.y; target = m; }
       }
     }
-    function hit(a, b) {
-      return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+    let dx = 0;
+    let dy = -1;
+    if (target) {
+      const dist = Math.hypot(target.x - arcade.ship.x, target.y - arcade.ship.y) || 1;
+      const flight = dist / 520;
+      const isMeteor = target.speed !== undefined;
+      const tx = target.x + (isMeteor ? target.drift * flight : 0);
+      const ty = target.y + (isMeteor ? target.speed * flight : 0);
+      const len = Math.hypot(tx - arcade.ship.x, ty - arcade.ship.y) || 1;
+      dx = (tx - arcade.ship.x) / len;
+      dy = (ty - arcade.ship.y) / len;
     }
-    function step(dt) {
-      tick += dt;
-      for (const st of stars) {
-        st.y += st.s * dt;
-        if (st.y > H) { st.y = 0; st.x = Math.random() * W; }
-      }
-      if (paused || over) return;
+    arcade.bullets.push({
+      x: arcade.ship.x, y: arcade.ship.y - 18,
+      vx: dx * 520, vy: dy * 520, life: 1.5,
+      target: target,
+      trail: [{ x: arcade.ship.x, y: arcade.ship.y - 18 }]
+    });
+    arcade.ammo--;
+    if (arcade.ammo <= 0) arcadeStartReload();
+    arcadeUpdateAmmo();
+  }
 
-      let dir = 0;
-      if (keys.ArrowLeft || keys.KeyA || keys.a) dir -= 1;
-      if (keys.ArrowRight || keys.KeyD || keys.d) dir += 1;
-      player.x = Math.max(4, Math.min(W - player.w - 4, player.x + dir * player.speed * dt));
+  function arcadeHit() {
+    const g = arcade;
+    g.lives--;
+    arcadeLives.textContent = '♥ '.repeat(Math.max(0, g.lives)).trim() || '—';
+    if (g.lives <= 0) {
+      g.over = true;
+      if (g.raf) cafFn(g.raf);
+      arcadeKills.textContent = 'Кораблик повреждён · нажми «Заново»';
+    }
+  }
 
-      cooldown -= dt;
-      if ((keys.Space || keys.space || firing) && cooldown <= 0) {
-        bullets.push({ x: player.x + player.w / 2 - 2, y: player.y - 8, w: 4, h: 11 });
-        cooldown = 0.14;
-      }
-      for (const b of bullets) b.y -= 440 * dt;
+  function segmentHitsCircle(x1, y1, x2, y2, cx, cy, r) {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const len2 = dx * dx + dy * dy;
+    let t = len2 ? ((cx - x1) * dx + (cy - y1) * dy) / len2 : 0;
+    t = Math.max(0, Math.min(1, t));
+    return Math.hypot(cx - (x1 + t * dx), cy - (y1 + t * dy)) <= r;
+  }
 
-      spawnTimer -= dt;
-      if (spawnTimer <= 0) {
-        spawn();
-        spawnTimer = Math.max(0.2, 0.95 - wave * 0.06) * (0.7 + Math.random() * 0.6);
-      }
-      for (const e of enemies) {
-        e.y += e.speed * dt;
-        if (e.type === "fast") e.x += Math.sin(tick * 4 + e.phase) * 60 * dt;
-        e.x = Math.max(2, Math.min(W - e.w - 2, e.x));
-      }
+  function arcadeStep(dt) {
+    const g = arcade;
+    if (!g || g.over) return;
 
-      for (const b of bullets) {
-        for (const e of enemies) {
-          if (e.hp > 0 && hit(b, e)) {
-            e.hp--; b.y = -100;
-            if (e.hp <= 0) {
-              score += e.type === "tank" ? 40 : (e.type === "fast" ? 20 : 10);
-              kills++;
-              boom(e.x + e.w / 2, e.y + e.h / 2, e.type === "tank" ? "#ffb347" : "#6ef2a4");
-              if (kills % 12 === 0) wave++;
-              hud();
-            }
-            break;
+    if (g.reloading) {
+      g.reloadTimer -= dt;
+      if (g.reloadTimer <= 0) {
+        g.reloading = false;
+        g.reloadTimer = 0;
+        g.ammo = ARCADE_MAGAZINE;
+      }
+      arcadeUpdateAmmo();
+    }
+
+    const dir = Number(arcadeKeys.right) - Number(arcadeKeys.left);
+    g.ship.x = Math.max(24, Math.min(ARCADE_W - 24, g.ship.x + dir * 280 * dt));
+
+    g.cooldown -= dt;
+    if (arcadeKeys.fire && !g.reloading && g.ammo > 0 && g.cooldown <= 0) {
+      arcadeFire();
+      g.cooldown = 0.13;
+    }
+
+    // Бесконечный спавн: лимитов на сбитые нет, растёт только волна.
+    g.spawn -= dt;
+    if (g.spawn <= 0) {
+      if (g.meteors.length < 3) arcadeSpawnMeteor();
+      g.spawn = Math.max(0.32, 0.9 - g.kills * 0.015);
+    }
+
+    g.alienTimer -= dt;
+    if (g.alienTimer <= 0) {
+      if (g.aliens.length < 1 + Math.floor(arcadeWave() / 3)) arcadeSpawnAlien();
+      g.alienTimer = Math.max(1.8, 3.4 - arcadeWave() * 0.12);
+    }
+
+    for (const a of g.aliens) {
+      a.phase += dt;
+      a.x += a.drift * dt;
+      if (a.x < 40 || a.x > ARCADE_W - 40) {
+        a.drift *= -1;
+        a.x = Math.max(40, Math.min(ARCADE_W - 40, a.x));
+      }
+      a.fire -= dt;
+      if (a.fire <= 0 && !a.dead) {
+        arcadeAlienFire(a);
+        a.fire = 3.6 + Math.random() * 0.9;
+      }
+    }
+
+    for (const b of g.bullets) {
+      const px = b.x;
+      const py = b.y;
+      if (b.target && !b.target.dead) {
+        const desired = Math.atan2(b.target.y - b.y, b.target.x - b.x);
+        const current = Math.atan2(b.vy, b.vx);
+        let diff = desired - current;
+        while (diff > Math.PI) diff -= 2 * Math.PI;
+        while (diff < -Math.PI) diff += 2 * Math.PI;
+        const turn = Math.max(-7 * dt, Math.min(7 * dt, diff));
+        const speed = Math.hypot(b.vx, b.vy);
+        b.vx = Math.cos(current + turn) * speed;
+        b.vy = Math.sin(current + turn) * speed;
+      }
+      b.x += b.vx * dt;
+      b.y += b.vy * dt;
+      b.life -= dt;
+      b.prevX = px;
+      b.prevY = py;
+      b.trail.push({ x: b.x, y: b.y });
+      if (b.trail.length > 10) b.trail.shift();
+    }
+    g.bullets = g.bullets.filter(b =>
+      b.life > 0 && b.x > -20 && b.x < ARCADE_W + 20 && b.y > -20 && b.y < ARCADE_H + 20);
+
+    for (const eb of g.enemyBullets) {
+      const px = eb.x;
+      const py = eb.y;
+      eb.x += eb.vx * dt;
+      eb.y += eb.vy * dt;
+      eb.life -= dt;
+      eb.trail.push({ x: eb.x, y: eb.y });
+      if (eb.trail.length > 8) eb.trail.shift();
+      if (segmentHitsCircle(px, py, eb.x, eb.y, g.ship.x, g.ship.y, 11)) {
+        eb.dead = true;
+        arcadeHit();
+      }
+    }
+    g.enemyBullets = g.enemyBullets.filter(b =>
+      !b.dead && b.life > 0 && b.x > -30 && b.x < ARCADE_W + 30 && b.y > -30 && b.y < ARCADE_H + 30);
+
+    for (const m of g.meteors) {
+      m.y += m.speed * dt;
+      m.x += m.drift * dt;
+      m.tilt += m.spin * dt;
+      if (m.x < m.r) { m.x = m.r; m.drift *= -1; }
+      if (m.x > ARCADE_W - m.r) { m.x = ARCADE_W - m.r; m.drift *= -1; }
+      if (Math.hypot(m.x - g.ship.x, m.y - g.ship.y) < m.r + 8) {
+        m.dead = true;
+        arcadeHit();
+      } else if (m.y - m.r > ARCADE_H) {
+        m.dead = true;
+      }
+    }
+
+    for (const b of g.bullets) {
+      if (b.dead) continue;
+      for (const m of g.meteors) {
+        if (m.dead) continue;
+        if (segmentHitsCircle(
+              b.prevX === undefined ? b.x : b.prevX,
+              b.prevY === undefined ? b.y : b.prevY,
+              b.x, b.y, m.x, m.y, m.r + 7)) {
+          m.dead = true;
+          b.dead = true;
+          g.kills++;
+          g.meteorsKilled++;
+          for (let i = 0; i < 8; i++) {
+            const a = Math.random() * Math.PI * 2;
+            g.particles.push({
+              x: m.x, y: m.y,
+              vx: Math.cos(a) * (40 + Math.random() * 90),
+              vy: Math.sin(a) * (40 + Math.random() * 90),
+              life: 0.5 + Math.random() * 0.3, max: 0.8
+            });
           }
+          arcadeUpdateKills();
+          break;
         }
       }
-      bullets = bullets.filter(b => b.y > -20);
-      enemies = enemies.filter(e => e.hp > 0 && e.y < H + 30);
+    }
 
-      invuln -= dt;
-      if (invuln <= 0) {
-        for (const e of enemies) {
-          if (hit(e, player)) {
-            boom(player.x + player.w / 2, player.y, "#ff8c66");
-            lives--; invuln = 1.5; enemies = []; hud();
-            if (lives <= 0) { over = true; saveBest(score); hud(); }
-            break;
+    for (const b of g.bullets) {
+      if (b.dead) continue;
+      for (const a of g.aliens) {
+        if (a.dead) continue;
+        const bx = b.prevX === undefined ? b.x : b.prevX;
+        const by = b.prevY === undefined ? b.y : b.prevY;
+        if (segmentHitsCircle(bx, by, b.x, b.y, a.x, a.y, 24)) {
+          a.hp--;
+          b.dead = true;
+          for (let i = 0; i < 10; i++) {
+            const ang = Math.random() * Math.PI * 2;
+            g.particles.push({
+              x: a.x, y: a.y,
+              vx: Math.cos(ang) * (50 + Math.random() * 120),
+              vy: Math.sin(ang) * (50 + Math.random() * 120),
+              life: 0.5 + Math.random() * 0.4, max: 0.9
+            });
           }
+          if (a.hp <= 0) {
+            a.dead = true;
+            g.kills++;
+            g.shipsKilled++;
+          }
+          arcadeUpdateKills();
+          break;
         }
       }
-      for (const p of particles) {
-        p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt;
-      }
-      particles = particles.filter(p => p.life > 0);
-    }
-    function draw() {
-      if (!ctx) return;
-      ctx.clearRect(0, 0, W, H);
-      ctx.fillStyle = "#020706"; ctx.fillRect(0, 0, W, H);
-      ctx.fillStyle = "rgba(110,242,164,.25)";
-      for (const st of stars) ctx.fillRect(st.x | 0, st.y | 0, st.z | 0, st.z | 0);
-      if (!over && (invuln <= 0 || Math.floor(tick * 12) % 2 === 0)) {
-        ctx.fillStyle = "#6ef2a4";
-        ctx.fillRect(player.x + 10, player.y, 6, 18);
-        ctx.fillRect(player.x, player.y + 10, player.w, 8);
-        ctx.fillRect(player.x + 4, player.y + 16, 4, 4);
-        ctx.fillRect(player.x + 18, player.y + 16, 4, 4);
-      }
-      ctx.fillStyle = "#ffd77a";
-      for (const b of bullets) ctx.fillRect(b.x | 0, b.y | 0, b.w, b.h);
-      for (const e of enemies) {
-        ctx.fillStyle = e.type === "tank" ? "#ff9c5b" : (e.type === "fast" ? "#b98cff" : "#7fd0ff");
-        ctx.fillRect(e.x | 0, e.y | 0, e.w, e.h);
-        ctx.fillStyle = "#020706";
-        ctx.fillRect(e.x + 3, e.y + 5, e.w - 6, 3);
-      }
-      for (const p of particles) { ctx.fillStyle = p.color; ctx.fillRect(p.x | 0, p.y | 0, 2, 2); }
-      ctx.fillStyle = "#6ef2a4";
-      ctx.font = "12px Courier New, monospace";
-      ctx.fillText("ОЧКИ " + score + "   ВОЛНА " + wave + "   ЖИЗНИ " + lives, 10, 18);
-      if (paused) { ctx.fillStyle = "#ffd77a"; ctx.fillText("ПАУЗА (P)", W / 2 - 40, H / 2); }
-      if (over) {
-        ctx.fillStyle = "#ff9c5b";
-        ctx.fillText("КОНЕЦ ИГРЫ · РЕКОРД " + best(), W / 2 - 120, H / 2);
-        ctx.fillText("Кнопка «Заново»", W / 2 - 60, H / 2 + 22);
-      }
-    }
-    function frame(now) {
-      if (!running) return;
-      const dt = Math.min(0.05, (now - last) / 1000 || 0);
-      last = now;
-      step(dt); draw();
-      raf = nextFrame(frame);
-    }
-    function start() {
-      if (running) return;
-      reset(); running = true; last = Date.now();
-      raf = nextFrame(frame);
-    }
-    function stop() {
-      running = false;
-      if (raf) cancelFrame(raf);
-      raf = 0;
     }
 
-    if (arcadeCanvas) {
-      arcadeCanvas.addEventListener("mousedown", () => { firing = true; });
-      arcadeCanvas.addEventListener("touchstart", (e) => { if (e.preventDefault) e.preventDefault(); firing = true; }, { passive: false });
-      arcadeCanvas.addEventListener("mousemove", (e) => {
-        if (!e.clientX || !arcadeCanvas.getBoundingClientRect) return;
-        const box = arcadeCanvas.getBoundingClientRect();
-        if (box.width) player.x = (e.clientX - box.left) * W / box.width - player.w / 2;
-      });
-      window.addEventListener("mouseup", () => { firing = false; });
-      window.addEventListener("touchend", () => { firing = false; });
+    g.meteors = g.meteors.filter(m => !m.dead);
+    g.aliens = g.aliens.filter(a => !a.dead);
+    g.bullets = g.bullets.filter(b => !b.dead);
+    for (const p of g.particles) {
+      p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt;
     }
-    window.addEventListener("keydown", (e) => {
-      keys[e.code] = true; keys[e.key] = true;
-      if (e.code === "KeyP" || e.key === "p") paused = !paused;
-      if (e.code === "Space" || e.key === " ") { firing = true; if (e.preventDefault) e.preventDefault(); }
-    });
-    window.addEventListener("keyup", (e) => {
-      keys[e.code] = false; keys[e.key] = false;
-      if (e.code === "Space" || e.key === " ") firing = false;
-    });
+    g.particles = g.particles.filter(p => p.life > 0);
+  }
 
-    return { start: start, stop: stop, restart: reset };
+  function arcadeDraw() {
+    const g = arcade;
+    if (!g) return;
+    const ctx = canvas.getContext('2d');
+
+    const sky = ctx.createLinearGradient(0, 0, 0, ARCADE_H);
+    sky.addColorStop(0, '#04120e');
+    sky.addColorStop(1, '#010504');
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, ARCADE_W, ARCADE_H);
+
+    for (const s of arcadeStars) {
+      ctx.fillStyle = 'rgba(207,233,221,' + s.a + ')';
+      ctx.fillRect(s.x, s.y, s.r, s.r);
+    }
+
+    ctx.fillStyle = 'rgba(110,242,164,.09)';
+    ctx.fillRect(0, ARCADE_H - 2, ARCADE_W, 2);
+
+    for (const m of g.meteors) {
+      ctx.save();
+      ctx.translate(m.x, m.y);
+      ctx.rotate(m.tilt);
+      ctx.beginPath();
+      for (let i = 0; i < 8; i++) {
+        const a = (i / 8) * Math.PI * 2;
+        const r = m.r * (0.78 + ((i * 7 + Math.floor(m.seed)) % 5) / 12);
+        const px = Math.cos(a) * r;
+        const py = Math.sin(a) * r;
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.fillStyle = '#56685f';
+      ctx.fill();
+      ctx.strokeStyle = '#9ab2a5';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    for (const a of g.aliens) {
+      const bob = Math.sin(a.phase * 3) * 3;
+      ctx.save();
+      ctx.translate(a.x, a.y + bob);
+      ctx.shadowColor = '#ff5c5c';
+      ctx.shadowBlur = 14;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 19, 9, 0, 0, Math.PI * 2);
+      ctx.fillStyle = a.hp > 1 ? '#6d2b2b' : '#8a3a2f';
+      ctx.fill();
+      ctx.strokeStyle = '#ff7a6a';
+      ctx.lineWidth = 1.4;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.ellipse(0, -4, 9, 5, 0, Math.PI, 0);
+      ctx.stroke();
+      ctx.fillStyle = '#ffd0c0';
+      ctx.fillRect(-8, 1, 4, 3);
+      ctx.fillRect(4, 1, 4, 3);
+      ctx.restore();
+    }
+    ctx.shadowBlur = 0;
+
+    ctx.strokeStyle = 'rgba(110,242,164,.75)';
+    ctx.lineWidth = 2;
+    ctx.shadowColor = '#6ef2a4';
+    ctx.shadowBlur = 10;
+    for (const b of g.bullets) {
+      if (b.trail.length > 1) {
+        ctx.beginPath();
+        ctx.moveTo(b.trail[0].x, b.trail[0].y);
+        for (let i = 1; i < b.trail.length; i++) ctx.lineTo(b.trail[i].x, b.trail[i].y);
+        ctx.stroke();
+      }
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, 3, 0, Math.PI * 2);
+      ctx.fillStyle = '#eafff4';
+      ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+
+    ctx.strokeStyle = 'rgba(255,90,80,.95)';
+    ctx.lineWidth = 2.5;
+    ctx.shadowColor = '#ff4a3a';
+    ctx.shadowBlur = 12;
+    for (const eb of g.enemyBullets) {
+      if (eb.trail.length > 1) {
+        ctx.beginPath();
+        ctx.moveTo(eb.trail[0].x, eb.trail[0].y);
+        for (let i = 1; i < eb.trail.length; i++) ctx.lineTo(eb.trail[i].x, eb.trail[i].y);
+        ctx.stroke();
+      }
+      ctx.beginPath();
+      ctx.arc(eb.x, eb.y, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffd0c0';
+      ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+
+    for (const p of g.particles) {
+      ctx.fillStyle = 'rgba(255,200,87,' + Math.max(0, p.life / p.max) + ')';
+      ctx.fillRect(p.x, p.y, 2, 2);
+    }
+
+    const x = g.ship.x;
+    const y = g.ship.y;
+    ctx.save();
+    ctx.translate(x, y);
+    if (arcadeKeys.left || arcadeKeys.right) {
+      ctx.fillStyle = 'rgba(255,180,70,.85)';
+      ctx.beginPath();
+      ctx.moveTo(-5, 10);
+      ctx.lineTo(0, 21 + Math.random() * 6);
+      ctx.lineTo(5, 10);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.beginPath();
+    ctx.moveTo(0, -20);
+    ctx.lineTo(13, 14);
+    ctx.lineTo(0, 8);
+    ctx.lineTo(-13, 14);
+    ctx.closePath();
+    ctx.fillStyle = '#1d6b4b';
+    ctx.fill();
+    ctx.strokeStyle = '#6ef2a4';
+    ctx.lineWidth = 1.6;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(0, -2, 3, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffd77a';
+    ctx.fill();
+    ctx.restore();
+
+    if (g.over) {
+      ctx.fillStyle = 'rgba(1,4,4,.72)';
+      ctx.fillRect(0, 0, ARCADE_W, ARCADE_H);
+      ctx.fillStyle = '#ffb347';
+      ctx.textAlign = 'center';
+      ctx.font = "700 28px 'Courier New', monospace";
+      ctx.fillText('КОНЕЦ ИГРЫ', ARCADE_W / 2, ARCADE_H / 2 - 10);
+      ctx.font = "14px 'Courier New', monospace";
+      ctx.fillText('Нажми «Заново»', ARCADE_W / 2, ARCADE_H / 2 + 24);
+      ctx.textAlign = 'left';
+    }
+  }
+
+  function arcadeFrame(now) {
+    if (!arcade || arcadeOverlay.hidden) return;
+    if (!arcade.last) arcade.last = now;
+    let elapsed = Math.min((now - arcade.last) / 1000, 1);
+    arcade.last = now;
+    while (elapsed > 0 && arcade && !arcade.over) {
+      const step = Math.min(elapsed, 0.05);
+      arcadeStep(step);
+      elapsed -= step;
+    }
+    arcadeDraw();
+    if (arcade && !arcade.over) arcade.raf = rafFn(arcadeFrame);
   }
 
   function openArcade() {
-    if (!arcadeOverlay) return;
+    arcadeReset();
     arcadeOverlay.hidden = false;
-    arcadeOverlay.classList.add("visible");
-    if (!arcade) arcade = createArcade();
-    arcade.start();
-    if (arcadeBtn && arcadeBtn.blur) arcadeBtn.blur();
+    rafFn(() => arcadeOverlay.classList.add('visible'));
+    if (input && input.blur) input.blur();
+    arcade.raf = rafFn(arcadeFrame);
   }
+
   function closeArcade() {
-    if (!arcadeOverlay) return;
-    arcadeOverlay.classList.remove("visible");
+    if (arcade && arcade.raf) cafFn(arcade.raf);
+    arcade = null;
+    arcadeKeys.left = arcadeKeys.right = arcadeKeys.fire = false;
+    arcadeOverlay.classList.remove('visible');
     arcadeOverlay.hidden = true;
-    if (arcade) arcade.stop();
   }
-  if (arcadeBtn) arcadeBtn.addEventListener("click", openArcade);
-  if (arcadeClose) arcadeClose.addEventListener("click", closeArcade);
-  if (arcadeRestart) arcadeRestart.addEventListener("click", () => { if (arcade) arcade.restart(); });
-  window.addEventListener("keydown", (e) => {
-    if ((e.key === "Escape" || e.code === "Escape") && arcadeOverlay && !arcadeOverlay.hidden) closeArcade();
+
+  function canvasPointerX(event) {
+    const rect = canvas.getBoundingClientRect();
+    return Math.max(24, Math.min(ARCADE_W - 24, (event.clientX - rect.left) / rect.width * ARCADE_W));
+  }
+
+  arcadeBtn.addEventListener('click', openArcade);
+  arcadeClose.addEventListener('click', closeArcade);
+  arcadeReloadBtn.addEventListener('click', arcadeStartReload);
+  arcadeRestart.addEventListener('click', () => {
+    if (!arcade) return;
+    if (arcade.raf) cafFn(arcade.raf);
+    arcadeReset();
+    arcade.last = 0;
+    arcade.raf = rafFn(arcadeFrame);
   });
+
+  window.addEventListener('keydown', (event) => {
+    if (arcadeOverlay.hidden || !arcade) return;
+    const k = event.key;
+    if (k === 'ArrowLeft' || k === 'a' || k === 'A' || k === 'ф') {
+      arcadeKeys.left = true; event.preventDefault();
+    } else if (k === 'ArrowRight' || k === 'd' || k === 'D' || k === 'в') {
+      arcadeKeys.right = true; event.preventDefault();
+    } else if (k === ' ' || k === 'Spacebar') {
+      arcadeKeys.fire = true; event.preventDefault();
+    } else if (k === 'r' || k === 'R' || k === 'к') {
+      arcadeStartReload(); event.preventDefault();
+    } else if (k === 'Escape') {
+      closeArcade();
+    }
+  });
+
+  window.addEventListener('keyup', (event) => {
+    const k = event.key;
+    if (k === 'ArrowLeft' || k === 'a' || k === 'A' || k === 'ф') arcadeKeys.left = false;
+    if (k === 'ArrowRight' || k === 'd' || k === 'D' || k === 'в') arcadeKeys.right = false;
+    if (k === ' ' || k === 'Spacebar') arcadeKeys.fire = false;
+  });
+
+  window.addEventListener('blur', () => {
+    arcadeKeys.left = arcadeKeys.right = arcadeKeys.fire = false;
+  });
+
+  canvas.addEventListener('pointermove', (event) => {
+    if (arcade) arcade.ship.x = canvasPointerX(event);
+  });
+  canvas.addEventListener('pointerdown', (event) => {
+    event.preventDefault();
+    if (!arcade) return;
+    arcade.ship.x = canvasPointerX(event);
+    arcadeKeys.fire = true;
+    arcadeFire();
+  });
+  canvas.addEventListener('pointerup', () => { arcadeKeys.fire = false; });
+  canvas.addEventListener('pointerleave', () => { arcadeKeys.fire = false; });
 
   async function init() {
     try {

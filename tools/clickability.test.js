@@ -44,7 +44,7 @@ const window = {
 };
 
 const state = { mission: 1, total: 13, title: '1. Брифинг отдела ИБ',
-  brief: '...', goal: 'Разберись, что находится в каталоге /station.',
+  brief: '...', goal: 'cat /etc/ssh/sshd_config — читает настройки; sed -i "s/PermitRootLogin yes/PermitRootLogin no/" /etc/ssh/sshd_config — меняет строку; systemctl restart sshd — перезапуск.',
   hint: '...', done: 0, step_done: 0, step_total: 1, score: 0, cwd: '/home/analyst', completed: false };
 const fetch = async (url, options = {}) => {
   const method = options.method || 'GET';
@@ -75,6 +75,12 @@ new Function('document', 'window', 'fetch', 'setTimeout', 'clearTimeout', 'setIn
   if (elements['linux-panel'].hidden) throw new Error('панель заданий должна быть видна');
   if (!elements['linux-title'].textContent.includes('Брифинг')) {
     throw new Error('не отрисовано задание: title=' + JSON.stringify(elements['linux-title'].textContent) + ' hint=' + JSON.stringify(elements['hint'].textContent));
+  }
+
+  const codes = elements['linux-goal'].children
+    .filter(c => c.className === 'linux-cmd').map(c => c.textContent);
+  for (const part of ['cat /etc/ssh/sshd_config', 'sed -i', 'systemctl restart sshd']) {
+    if (!codes.some(c => c.includes(part))) throw new Error('команда не подсвечена жёлтым: ' + part);
   }
 
   if (!handlers['form:submit']) throw new Error('нет обработчика формы ввода');
