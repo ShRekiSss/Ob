@@ -105,5 +105,13 @@ new Function('document', 'window', 'fetch', 'setTimeout', 'clearTimeout', 'setIn
   handlers['scare-close:click']();
   if (!elements['scare-overlay'].hidden) throw new Error('скример не закрылся');
 
-  console.log('OK UI clickability: form / history / reset / scare');
+  if (!handlers['arcade-btn:click']) throw new Error('нет кнопки аркады');
+  handlers['arcade-btn:click']();
+  if (elements['arcade-overlay'].hidden) throw new Error('аркада не открылась');
+  if (!handlers['arcade-close:click']) throw new Error('нет кнопки закрытия аркады');
+  if (!handlers['arcade-restart:click']) throw new Error('нет кнопки перезапуска аркады');
+  handlers['arcade-close:click']();
+  if (!elements['arcade-overlay'].hidden) throw new Error('аркада не закрылась');
+
+  console.log('OK UI clickability: form / history / reset / scare / arcade');
 })().catch(e => { console.error('FAIL UI:', e.message); process.exit(1); });
